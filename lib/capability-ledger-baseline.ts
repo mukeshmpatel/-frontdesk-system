@@ -274,49 +274,49 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:187:58"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:205:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:205:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:208:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:208:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:205:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:208:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:207:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:207:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:210:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:210:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:207:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:210:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:220:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:220:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:223:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:223:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:220:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:223:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:226:33",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:226:33]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:229:33",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:229:33]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:226:33"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:229:33"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:230:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:230:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:233:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:233:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:230:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:233:9"
   },
   {
     "itemKey": "button:app/aaiq-agent-studio/digital-employee-command-center.tsx:23:5",
@@ -1534,247 +1534,247 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/aaiq-event-workforce/event-workforce-client.tsx:5:3609"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1048:131",
-    "itemName": "Close [app/daymark-client.tsx:1048:131]",
+    "itemKey": "button:app/daymark-client.tsx:1051:131",
+    "itemName": "Close [app/daymark-client.tsx:1051:131]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1048:131"
+    "sourcePath": "app/daymark-client.tsx:1051:131"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1060:153",
-    "itemName": "Close [app/daymark-client.tsx:1060:153]",
+    "itemKey": "button:app/daymark-client.tsx:1063:153",
+    "itemName": "Close [app/daymark-client.tsx:1063:153]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1060:153"
+    "sourcePath": "app/daymark-client.tsx:1063:153"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1072:149",
-    "itemName": "Close [app/daymark-client.tsx:1072:149]",
+    "itemKey": "button:app/daymark-client.tsx:1075:149",
+    "itemName": "Close [app/daymark-client.tsx:1075:149]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1072:149"
+    "sourcePath": "app/daymark-client.tsx:1075:149"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1105:133",
-    "itemName": "Close [app/daymark-client.tsx:1105:133]",
+    "itemKey": "button:app/daymark-client.tsx:1108:133",
+    "itemName": "Close [app/daymark-client.tsx:1108:133]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1105:133"
+    "sourcePath": "app/daymark-client.tsx:1108:133"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1117:270",
-    "itemName": "Close [app/daymark-client.tsx:1117:270]",
+    "itemKey": "button:app/daymark-client.tsx:1120:270",
+    "itemName": "Close [app/daymark-client.tsx:1120:270]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1117:270"
+    "sourcePath": "app/daymark-client.tsx:1120:270"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1090:11",
-    "itemName": "Close reminder [app/daymark-client.tsx:1090:11]",
+    "itemKey": "button:app/daymark-client.tsx:1093:11",
+    "itemName": "Close reminder [app/daymark-client.tsx:1093:11]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1090:11"
+    "sourcePath": "app/daymark-client.tsx:1093:11"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:914:19",
-    "itemName": "Create reminder with voice [app/daymark-client.tsx:914:19]",
+    "itemKey": "button:app/daymark-client.tsx:917:19",
+    "itemName": "Create reminder with voice [app/daymark-client.tsx:917:19]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:914:19"
+    "sourcePath": "app/daymark-client.tsx:917:19"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:915:19",
-    "itemName": "Record video memory [app/daymark-client.tsx:915:19]",
+    "itemKey": "button:app/daymark-client.tsx:918:19",
+    "itemName": "Record video memory [app/daymark-client.tsx:918:19]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:915:19"
+    "sourcePath": "app/daymark-client.tsx:918:19"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1031:96",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1031:96]",
+    "itemKey": "button:app/daymark-client.tsx:1000:17",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1000:17]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1031:96"
+    "sourcePath": "app/daymark-client.tsx:1000:17"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1036:96",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1036:96]",
+    "itemKey": "button:app/daymark-client.tsx:1034:96",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1034:96]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1036:96"
+    "sourcePath": "app/daymark-client.tsx:1034:96"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1052:164",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1052:164]",
+    "itemKey": "button:app/daymark-client.tsx:1039:96",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1039:96]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1052:164"
+    "sourcePath": "app/daymark-client.tsx:1039:96"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1052:57",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1052:57]",
+    "itemKey": "button:app/daymark-client.tsx:1055:164",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1055:164]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1052:57"
+    "sourcePath": "app/daymark-client.tsx:1055:164"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1062:92",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1062:92]",
+    "itemKey": "button:app/daymark-client.tsx:1055:57",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1055:57]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1062:92"
+    "sourcePath": "app/daymark-client.tsx:1055:57"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1064:162",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1064:162]",
+    "itemKey": "button:app/daymark-client.tsx:1065:92",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1065:92]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1064:162"
+    "sourcePath": "app/daymark-client.tsx:1065:92"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1064:57",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1064:57]",
+    "itemKey": "button:app/daymark-client.tsx:1067:162",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1067:162]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1064:57"
+    "sourcePath": "app/daymark-client.tsx:1067:162"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1075:52",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1075:52]",
+    "itemKey": "button:app/daymark-client.tsx:1067:57",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1067:57]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1075:52"
+    "sourcePath": "app/daymark-client.tsx:1067:57"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1083:160",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1083:160]",
+    "itemKey": "button:app/daymark-client.tsx:1078:52",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1078:52]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1083:160"
+    "sourcePath": "app/daymark-client.tsx:1078:52"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1083:57",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1083:57]",
+    "itemKey": "button:app/daymark-client.tsx:1086:160",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1086:160]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1083:57"
+    "sourcePath": "app/daymark-client.tsx:1086:160"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1094:68",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1094:68]",
+    "itemKey": "button:app/daymark-client.tsx:1086:57",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1086:57]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1094:68"
+    "sourcePath": "app/daymark-client.tsx:1086:57"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1098:256",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1098:256]",
+    "itemKey": "button:app/daymark-client.tsx:1097:68",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1097:68]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1098:256"
+    "sourcePath": "app/daymark-client.tsx:1097:68"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1098:384",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1098:384]",
+    "itemKey": "button:app/daymark-client.tsx:1101:256",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1101:256]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1098:384"
+    "sourcePath": "app/daymark-client.tsx:1101:256"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1098:56",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1098:56]",
+    "itemKey": "button:app/daymark-client.tsx:1101:384",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1101:384]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1098:56"
+    "sourcePath": "app/daymark-client.tsx:1101:384"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1110:27",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1110:27]",
+    "itemKey": "button:app/daymark-client.tsx:1101:56",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1101:56]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1110:27"
+    "sourcePath": "app/daymark-client.tsx:1101:56"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1111:320",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1111:320]",
+    "itemKey": "button:app/daymark-client.tsx:1113:27",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1113:27]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1111:320"
+    "sourcePath": "app/daymark-client.tsx:1113:27"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:1111:420",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:1111:420]",
+    "itemKey": "button:app/daymark-client.tsx:1114:320",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1114:320]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:1111:420"
+    "sourcePath": "app/daymark-client.tsx:1114:320"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:824:34",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:824:34]",
+    "itemKey": "button:app/daymark-client.tsx:1114:420",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:1114:420]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:824:34"
+    "sourcePath": "app/daymark-client.tsx:1114:420"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:835:13",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:835:13]",
+    "itemKey": "button:app/daymark-client.tsx:825:34",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:825:34]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:835:13"
+    "sourcePath": "app/daymark-client.tsx:825:34"
   },
   {
     "itemKey": "button:app/daymark-client.tsx:836:13",
@@ -1804,58 +1804,58 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/daymark-client.tsx:838:13"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:846:17",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:846:17]",
+    "itemKey": "button:app/daymark-client.tsx:839:13",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:839:13]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:846:17"
+    "sourcePath": "app/daymark-client.tsx:839:13"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:849:13",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:849:13]",
+    "itemKey": "button:app/daymark-client.tsx:847:17",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:847:17]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:849:13"
+    "sourcePath": "app/daymark-client.tsx:847:17"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:874:11",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:874:11]",
+    "itemKey": "button:app/daymark-client.tsx:850:13",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:850:13]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:874:11"
+    "sourcePath": "app/daymark-client.tsx:850:13"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:888:60",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:888:60]",
+    "itemKey": "button:app/daymark-client.tsx:875:11",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:875:11]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:888:60"
+    "sourcePath": "app/daymark-client.tsx:875:11"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:897:35",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:897:35]",
+    "itemKey": "button:app/daymark-client.tsx:889:60",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:889:60]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:897:35"
+    "sourcePath": "app/daymark-client.tsx:889:60"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:898:17",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:898:17]",
+    "itemKey": "button:app/daymark-client.tsx:898:35",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:898:35]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:898:17"
+    "sourcePath": "app/daymark-client.tsx:898:35"
   },
   {
     "itemKey": "button:app/daymark-client.tsx:899:17",
@@ -1867,130 +1867,130 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/daymark-client.tsx:899:17"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:916:19",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:916:19]",
+    "itemKey": "button:app/daymark-client.tsx:900:17",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:900:17]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:916:19"
+    "sourcePath": "app/daymark-client.tsx:900:17"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:930:44",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:930:44]",
+    "itemKey": "button:app/daymark-client.tsx:919:19",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:919:19]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:930:44"
+    "sourcePath": "app/daymark-client.tsx:919:19"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:931:17",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:931:17]",
+    "itemKey": "button:app/daymark-client.tsx:933:44",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:933:44]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:931:17"
+    "sourcePath": "app/daymark-client.tsx:933:44"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:944:15",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:944:15]",
+    "itemKey": "button:app/daymark-client.tsx:934:17",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:934:17]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:944:15"
+    "sourcePath": "app/daymark-client.tsx:934:17"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:948:91",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:948:91]",
+    "itemKey": "button:app/daymark-client.tsx:947:15",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:947:15]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:948:91"
+    "sourcePath": "app/daymark-client.tsx:947:15"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:958:108",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:958:108]",
+    "itemKey": "button:app/daymark-client.tsx:951:91",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:951:91]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:958:108"
+    "sourcePath": "app/daymark-client.tsx:951:91"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:967:151",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:967:151]",
+    "itemKey": "button:app/daymark-client.tsx:961:108",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:961:108]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:967:151"
+    "sourcePath": "app/daymark-client.tsx:961:108"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:967:285",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:967:285]",
+    "itemKey": "button:app/daymark-client.tsx:970:151",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:970:151]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:967:285"
+    "sourcePath": "app/daymark-client.tsx:970:151"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:967:401",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:967:401]",
+    "itemKey": "button:app/daymark-client.tsx:970:285",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:970:285]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:967:401"
+    "sourcePath": "app/daymark-client.tsx:970:285"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:974:26",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:974:26]",
+    "itemKey": "button:app/daymark-client.tsx:970:401",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:970:401]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:974:26"
+    "sourcePath": "app/daymark-client.tsx:970:401"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:984:138",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:984:138]",
+    "itemKey": "button:app/daymark-client.tsx:977:26",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:977:26]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:984:138"
+    "sourcePath": "app/daymark-client.tsx:977:26"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:984:340",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:984:340]",
+    "itemKey": "button:app/daymark-client.tsx:987:138",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:987:138]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:984:340"
+    "sourcePath": "app/daymark-client.tsx:987:138"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:993:104",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:993:104]",
+    "itemKey": "button:app/daymark-client.tsx:987:340",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:987:340]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:993:104"
+    "sourcePath": "app/daymark-client.tsx:987:340"
   },
   {
-    "itemKey": "button:app/daymark-client.tsx:997:17",
-    "itemName": "Unlabeled button [app/daymark-client.tsx:997:17]",
+    "itemKey": "button:app/daymark-client.tsx:996:104",
+    "itemName": "Unlabeled button [app/daymark-client.tsx:996:104]",
     "itemType": "button",
     "owningModule": "AAIQ_HOME",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/daymark-client.tsx:997:17"
+    "sourcePath": "app/daymark-client.tsx:996:104"
   },
   {
     "itemKey": "button:app/housekeeping/housekeeping-departure-client.tsx:101:190",
@@ -3809,6 +3809,24 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
     "sourcePath": "app/components/aaiq-app-shell.tsx:72:572"
+  },
+  {
+    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:38:28",
+    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:38:28]",
+    "itemType": "button",
+    "owningModule": "AAIQ_SHARED_SHELL",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/components/aaiq-daily-briefing.tsx:38:28"
+  },
+  {
+    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:53:9",
+    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:53:9]",
+    "itemType": "button",
+    "owningModule": "AAIQ_SHARED_SHELL",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/components/aaiq-daily-briefing.tsx:53:9"
   },
   {
     "itemKey": "button:app/components/report-drilldown-table.tsx:44:11",

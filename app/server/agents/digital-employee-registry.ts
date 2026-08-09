@@ -38,31 +38,37 @@ function centerTool(name: string, description: string, fetch: (email: string) =>
   return { name, description, fetch };
 }
 
+const housekeepingTool = centerTool("read_housekeeping_assignments", "Read today's property-scoped housekeeping assignments, exceptions, and roster.", housekeepingAssignmentsToday);
+const complianceTool = centerTool("read_compliance_center", "Read the property's compliance programs, inspection cases, evidence links, and open exceptions.", complianceCenter);
+const communicationTool = centerTool("read_communication_center", "Read the property's open communication threads, drafts, and inbound messages across all connected channels.", communicationCenter);
+const cashTool = centerTool("read_cash_reconciliation", "Read today's authorized cash reconciliation: source totals, shift breakdown, and policy.", (email) => cashReconciliationDetail(email, {}));
+const reviewTool = centerTool("read_review_center", "Read recent guest reviews, response drafts, recovery cases, and connected review sources.", reviewCenter);
+
 export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "executive-briefing": {
     agentName: "AAIQ Digital General Manager",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Digital General Manager. Synthesize cross-department signal into an executive briefing: what needs the GM's attention today, ranked by guest, safety, and financial exposure.`,
-    tools: [canonicalFacts],
+    instructions: `${GOVERNANCE_RULES}\nYou are the Digital General Manager. Synthesize signal across housekeeping, compliance, cash, guest communications, and reviews into one executive briefing: what needs the GM's attention today, ranked by guest impact, safety, and financial exposure. Cross-reference departments when they connect (e.g. an overdue compliance item blocking a room turn, or a cash variance coinciding with a guest complaint) instead of listing each department in isolation. If a tool returns nothing of note, say so briefly rather than omitting the department.`,
+    tools: [canonicalFacts, housekeepingTool, complianceTool, cashTool, communicationTool, reviewTool],
   },
   "assistant-general-manager": {
     agentName: "AAIQ Digital Assistant General Manager",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Assistant General Manager. Audit shift handoff readiness: housekeeping turn status, open work, and labor exposure. Flag anything that would embarrass the GM if left unresolved.`,
-    tools: [canonicalFacts, centerTool("read_housekeeping_assignments", "Read today's property-scoped housekeeping assignments, exceptions, and roster.", housekeepingAssignmentsToday)],
+    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Assistant General Manager. Audit shift handoff readiness: housekeeping turn status, open work, open guest conversations awaiting reply, and labor exposure. Flag anything that would embarrass the GM if left unresolved before the next shift.`,
+    tools: [canonicalFacts, housekeepingTool, communicationTool],
   },
   "front-desk": {
     agentName: "AAIQ Digital Front Desk Agent",
     instructions: `${GOVERNANCE_RULES}\nYou are the Digital Front Desk Agent. Triage open guest and internal conversations, identify what needs a reply or service recovery, and prepare (but never send) a response. Escalate refunds, key issuance, and payment requests instead of resolving them.`,
-    tools: [centerTool("read_communication_center", "Read the property's open communication threads, drafts, and inbound messages across all connected channels.", communicationCenter), canonicalFacts],
+    tools: [communicationTool, canonicalFacts],
   },
   "housekeeping-coordinator": {
     agentName: "AAIQ Housekeeping Coordinator",
     instructions: `${GOVERNANCE_RULES}\nYou are the Housekeeping Coordinator. Prioritize today's room turns by departure urgency, VIP status, and open exceptions. Identify supply or maintenance handoffs blocking a turn.`,
-    tools: [centerTool("read_housekeeping_assignments", "Read today's property-scoped housekeeping assignments, exceptions, and roster.", housekeepingAssignmentsToday), canonicalFacts],
+    tools: [housekeepingTool, canonicalFacts],
   },
   "compliance-inspector": {
     agentName: "AAIQ Compliance Inspector",
     instructions: `${GOVERNANCE_RULES}\nYou are the Compliance Inspector. Review due and overdue compliance/inspection cases, missing evidence, and licensed-signoff requirements. Rank by life-safety exposure and due date. A qualified human still performs and signs every physical inspection.`,
-    tools: [centerTool("read_compliance_center", "Read the property's compliance programs, inspection cases, evidence links, and open exceptions.", complianceCenter)],
+    tools: [complianceTool],
   },
   "inventory-planner": {
     agentName: "AAIQ Digital F&B & Inventory Director",
@@ -77,7 +83,7 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "review-manager": {
     agentName: "AAIQ Review Manager",
     instructions: `${GOVERNANCE_RULES}\nYou are the Review Manager. Analyze recent guest reviews and open recovery cases. Identify unanswered reviews and recurring complaint themes. Draft response direction only; publishing remains approval-gated.`,
-    tools: [centerTool("read_review_center", "Read recent guest reviews, response drafts, recovery cases, and connected review sources.", reviewCenter)],
+    tools: [reviewTool],
   },
   "website-manager": {
     agentName: "AAIQ Website Manager",
@@ -89,7 +95,7 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
     instructions: `${GOVERNANCE_RULES}\nYou are the Social Media Manager. Use verified property content and recent guest sentiment to propose channel-appropriate talking points. Publishing remains approval-gated.`,
     tools: [
       centerTool("read_website_factory", "Read governed website projects and the verified property profile available for social content.", websiteFactory),
-      centerTool("read_review_center", "Read recent guest reviews and sentiment for the property.", reviewCenter),
+      reviewTool,
     ],
   },
   "revenue-analyst": {
@@ -108,7 +114,7 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "cash-auditor": {
     agentName: "AAIQ Digital Cash & Check Auditor",
     instructions: `${GOVERNANCE_RULES}\nYou are the Cash & Check Auditor. Reconcile the latest authorized cash source against shift, drop, and custody records for the current business date. Never post to the bank or ledger; flag variances for a manager to resolve.`,
-    tools: [centerTool("read_cash_reconciliation", "Read today's authorized cash reconciliation: source totals, shift breakdown, and policy.", (email) => cashReconciliationDetail(email, {}))],
+    tools: [cashTool],
   },
   "hiring-manager": {
     agentName: "AAIQ Digital Hiring & Onboarding Manager",
