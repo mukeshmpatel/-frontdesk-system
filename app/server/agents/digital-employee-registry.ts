@@ -6,8 +6,9 @@
  * built on, so a Digital Employee never sees more than a human on the
  * equivalent page would.
  */
-import { canonicalPropertyOperatingFacts, type GroundedAgentConfig, type GroundedTool } from "./agent-runtime";
-import { communicationCenter } from "../../../db/communication-center";
+import { z } from "zod";
+import { canonicalPropertyOperatingFacts, type GroundedActionTool, type GroundedAgentConfig, type GroundedTool } from "./agent-runtime";
+import { communicationCenter, createReplyDraft } from "../../../db/communication-center";
 import { housekeepingAssignmentsToday } from "../../../db/housekeeping-departures";
 import { complianceCenter } from "../../../db/compliance-inspections";
 import { propertyIntelligence } from "../../../db/property-intelligence";
@@ -23,10 +24,12 @@ const GOVERNANCE_RULES = `You are a governed AAIQ hotel operations Digital Emplo
 supplied property-scoped tools; never invent facts, records, guests, amounts, or compliance
 obligations. Cite the tool-returned record identifiers you relied on in every finding. When a tool
 returns an error or empty result, say what is missing instead of guessing. Recommend exactly one
-next action, chosen for guest impact, safety, financial exposure, and urgency. You are read-only:
-never claim to have sent messages, posted charges, published content, changed schedules, or taken
-any action outside these tools. Refunds, payments, publishing, access changes, hiring, discipline,
-and termination remain human-controlled regardless of what is asked.`;
+next action, chosen for guest impact, safety, financial exposure, and urgency. Data-reading tools
+never change anything. If a tool is described as creating a draft, calling it only saves an
+AWAITING_APPROVAL record for a human to review, edit, and send or reject — it never delivers
+anything to a guest or the outside world, and every such action you take must be listed in
+actionsTaken. Refunds, payments, publishing, access changes, hiring, discipline, and termination
+remain human-controlled regardless of what is asked.`;
 
 const canonicalFacts: GroundedTool = {
   name: "read_property_operating_facts",
@@ -44,6 +47,22 @@ const communicationTool = centerTool("read_communication_center", "Read the prop
 const cashTool = centerTool("read_cash_reconciliation", "Read today's authorized cash reconciliation: source totals, shift breakdown, and policy.", (email) => cashReconciliationDetail(email, {}));
 const reviewTool = centerTool("read_review_center", "Read recent guest reviews, response drafts, recovery cases, and connected review sources.", reviewCenter);
 
+const proposeGuestReplyAction: GroundedActionTool = {
+  name: "propose_guest_reply",
+  description: "Create a draft reply to a specific open communication thread from read_communication_center. This only saves an AWAITING_APPROVAL draft for a human to review, edit, and send; it never delivers anything to the guest.",
+  parameters: z.object({
+    threadId: z.string().describe("The id of the communication thread to reply to, exactly as returned by read_communication_center."),
+    draftBody: z.string().min(1).describe("The suggested reply text for a human to review and approve before sending."),
+  }),
+  execute: async (userEmail, params) => {
+    const threadId = String(params.threadId ?? "");
+    const draftBody = String(params.draftBody ?? "");
+    const result = await createReplyDraft(userEmail, { threadId, body: draftBody });
+    if (!result) return { error: "Unable to create a draft for this thread right now." };
+    return result;
+  },
+};
+
 export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "executive-briefing": {
     agentName: "AAIQ Digital General Manager",
@@ -57,8 +76,9 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "front-desk": {
     agentName: "AAIQ Digital Front Desk Agent",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Front Desk Agent. Triage open guest and internal conversations, identify what needs a reply or service recovery, and prepare (but never send) a response. Escalate refunds, key issuance, and payment requests instead of resolving them.`,
+    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Front Desk Agent. Triage open guest and internal conversations. For any thread that clearly needs a reply and does not involve a refund, key issuance, payment, or something you are not confident about, call propose_guest_reply with the exact threadId and a specific, guest-ready draft — this only creates an AWAITING_APPROVAL draft for a human to review and send, never delivers anything itself. Escalate refunds, key issuance, and payment requests in your summary instead of drafting a reply for them.`,
     tools: [communicationTool, canonicalFacts],
+    actions: [proposeGuestReplyAction],
   },
   "housekeeping-coordinator": {
     agentName: "AAIQ Housekeeping Coordinator",

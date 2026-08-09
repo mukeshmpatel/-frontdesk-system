@@ -32,6 +32,11 @@ export const groundedOperationsSchema = z.object({
   })),
   watchItems: z.array(z.string()),
   missingInformation: z.array(z.string()),
+  actionsTaken: z.array(z.object({
+    tool: z.string(),
+    summary: z.string(),
+    referenceId: z.string().nullable(),
+  })).default([]),
   confidence: z.number().min(0).max(1),
 });
 
@@ -44,10 +49,24 @@ export type GroundedTool = {
   fetch: (userEmail: string) => Promise<unknown>;
 };
 
+/**
+ * A tool that writes something, scoped tightly to creating an
+ * AWAITING_APPROVAL-style draft record. It must never send, publish, charge,
+ * or otherwise reach a guest or the outside world on its own — the same
+ * human-approval boundary every other write path in AAIQ already enforces.
+ */
+export type GroundedActionTool = {
+  name: string;
+  description: string;
+  parameters: z.ZodObject<z.ZodRawShape>;
+  execute: (userEmail: string, params: Record<string, unknown>) => Promise<unknown>;
+};
+
 export type GroundedAgentConfig = {
   agentName: string;
   instructions: string;
   tools: GroundedTool[];
+  actions?: GroundedActionTool[];
 };
 
 export type GroundedAgentRunResult =
@@ -89,13 +108,28 @@ export async function runGroundedOperationsAgent(
       return output;
     },
   }));
+  const actionTools = (config.actions ?? []).map(action => tool({
+    name: action.name,
+    description: action.description,
+    parameters: action.parameters,
+    execute: async (params: Record<string, unknown>) => {
+      let output: unknown;
+      try {
+        output = await action.execute(userEmail, params);
+      } catch (error) {
+        output = { error: error instanceof Error ? error.message : "This action could not be completed." };
+      }
+      await recordToolCall(run, action.name, params, output);
+      return output;
+    },
+  }));
 
   try {
     const agent = new Agent({
       name: config.agentName,
       model: AGENT_MODEL,
       instructions: config.instructions,
-      tools: runtimeTools,
+      tools: [...runtimeTools, ...actionTools],
       outputType: groundedOperationsSchema,
     });
     const runner = new Runner({

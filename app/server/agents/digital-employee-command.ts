@@ -35,6 +35,7 @@ function normalizeMaintenanceBriefing(briefing: {
     findings: briefing.priorities.map(item => ({ title: item.title, detail: item.reason, risk: item.risk, sourceIds: item.sourceIds })),
     watchItems: [...briefing.complianceWatch, ...briefing.partsAndWarrantyWatch],
     missingInformation: briefing.missingInformation,
+    actionsTaken: [],
     confidence: briefing.confidence,
   };
 }
@@ -122,7 +123,7 @@ export async function runDigitalEmployeeCommand(userEmail: string, input: Record
 
   const outcome = approvalRequired ? "APPROVAL_REQUIRED" : "COMPLETED";
   const evidence = briefing
-    ? [{ source: "GROUNDED_AGENT_FINDINGS", findings: briefing.findings, watchItems: briefing.watchItems, missingInformation: briefing.missingInformation }]
+    ? [{ source: "GROUNDED_AGENT_FINDINGS", findings: briefing.findings, watchItems: briefing.watchItems, missingInformation: briefing.missingInformation, actionsTaken: briefing.actionsTaken }]
     : [{ source: "MANUAL_FALLBACK" }];
   await db.prepare(`INSERT INTO digital_employee_command_messages
     (id,session_id,organization_id,property_id,sender_type,input_mode,body,run_id,outcome_type,
@@ -141,5 +142,6 @@ export async function runDigitalEmployeeCommand(userEmail: string, input: Record
     recommendedNextAction,
     confidence: briefing?.confidence ?? null,
     findings: briefing?.findings ?? [],
+    actionsTaken: briefing?.actionsTaken ?? [],
   };
 }

@@ -197,6 +197,7 @@ export default function AgentStudioClient() {
           {Array.isArray(output?.findings) && <ol>{output.findings.map((item:any, index:number) => <li key={index}><strong>{item.title}</strong> <span className={`risk-${String(item.risk).toLowerCase()}`}>{item.risk}</span><span>{item.detail}</span><small>Sources: {item.sourceIds?.join(", ") || "Missing"}</small></li>)}</ol>}
           {Array.isArray(output?.watchItems) && output.watchItems.length > 0 && <div className="watch-items"><small>WATCH</small><ul>{output.watchItems.map((item:string, index:number) => <li key={index}>{item}</li>)}</ul></div>}
           {Array.isArray(output?.missingInformation) && output.missingInformation.length > 0 && <div className="missing-information"><small>MISSING INFORMATION</small><ul>{output.missingInformation.map((item:string, index:number) => <li key={index}>{item}</li>)}</ul></div>}
+          {Array.isArray(output?.actionsTaken) && output.actionsTaken.length > 0 && <div className="actions-taken"><small>DRAFTS CREATED — AWAITING YOUR APPROVAL</small><ul>{output.actionsTaken.map((item:any, index:number) => <li key={index}><strong>{item.tool}</strong> {item.summary}</li>)}</ul></div>}
         </div> : <div className="empty-trace"><strong>No agent run yet</strong><span>Run the Maintenance Briefing Agent to create a source-linked trace.</span></div>}
       </aside>
     </section>
