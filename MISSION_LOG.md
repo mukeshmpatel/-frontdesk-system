@@ -624,3 +624,31 @@ Status: Engineering complete; property program configuration and authorized UAT 
 - Retained the truthful `working_incomplete` status until real property inspection programs, eligible inspectors, private evidence, notification delivery, remediation handoff, and authorized UAT are completed at both pilot properties.
 
 Confirmed: HNE Core and GitHub repository were not touched.
+
+## Post-Release-131: Digital Employees run on real, grounded LLM agents
+
+Every AAIQ Digital Employee in the chat-driven Command Center (`/aaiq-agent-studio`) now
+runs a governed OpenAI Agents SDK call instead of the prior static template-string
+dispatch:
+
+- Added `app/server/agents/agent-runtime.ts`: a shared, tool-grounded agent runtime
+  (structured output, source citation, confidence-gated human review, manual fallback
+  when no model key is configured) generalized from the existing maintenance-dispatcher
+  implementation.
+- Added `app/server/agents/digital-employee-registry.ts`: per-agent instructions and
+  read-only tools for all 19 non-maintenance Digital Employees, reusing each module's
+  existing property-scoped "center" data functions (communication, housekeeping,
+  compliance, inventory, reviews, website, tax, cash reconciliation, OTA, workforce
+  lifecycle, event workforce) so an agent never sees more than the equivalent dashboard
+  shows a human.
+- Replaced `runDigitalEmployeeCommand` (moved from `db/agent-platform.ts` to
+  `app/server/agents/digital-employee-command.ts`) so every agent key routes through a
+  real grounded run; low agent confidence now also triggers human-in-the-loop review
+  alongside the existing consequential-action keyword gate.
+- Run Trace panel in Agent Studio now renders findings, watch items, and missing
+  information for every Digital Employee, not just the maintenance dispatcher.
+
+No new external dependencies. Verified locally: `verify-capability-collisions.mjs` and
+`verify-migration-chain.mjs` PASS; `node --test tests/*.test.mjs` 293/295 pass (the 2
+pre-existing failures depend on `build/sites-vite-plugin.ts`, which is injected by the
+OpenAI Sites hosting platform at deploy time and is not part of this source export).

@@ -32,8 +32,8 @@ test("canonical sample contains working staff, assets, inbox, cash, hiring, webs
 });
 
 test("agent studio provides clickable role workers and text or multilingual voice commands", async () => {
-  const [service, client, route] = await Promise.all([
-    read("db/agent-platform.ts"),
+  const [command, client, route] = await Promise.all([
+    read("app/server/agents/digital-employee-command.ts"),
     read("app/aaiq-agent-studio/agent-studio-client.tsx"),
     read("app/api/v1/agent-studio/route.ts"),
   ]);
@@ -44,8 +44,22 @@ test("agent studio provides clickable role workers and text or multilingual voic
   assert.match(client, /ગુજરાતી/);
   assert.match(client, /👩🏽‍💼/);
   assert.match(route, /RUN_DIGITAL_EMPLOYEE_COMMAND/);
-  assert.match(service, /digital_employee_command_sessions/);
-  assert.match(service, /APPROVAL_REQUIRED/);
+  assert.match(command, /digital_employee_command_sessions/);
+  assert.match(command, /APPROVAL_REQUIRED/);
+});
+
+test("Digital Employee command runtime is tool-grounded, not canned text templates", async () => {
+  const [runtime, registry] = await Promise.all([
+    read("app/server/agents/agent-runtime.ts"),
+    read("app/server/agents/digital-employee-registry.ts"),
+  ]);
+  assert.match(runtime, /runGroundedOperationsAgent/);
+  assert.match(runtime, /new Agent\(/);
+  assert.match(runtime, /outputType: groundedOperationsSchema/);
+  for (const agentKey of [
+    "executive-briefing", "front-desk", "housekeeping-coordinator", "compliance-inspector",
+    "inventory-planner", "cash-auditor", "review-manager", "hiring-manager",
+  ]) assert.match(registry, new RegExp(`"${agentKey}":`));
 });
 
 test("review, growth, workforce uploads and property assets cannot read archived-property rows", async () => {

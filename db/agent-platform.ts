@@ -55,7 +55,7 @@ export async function ensureAgentPlatform() {
   database();
 }
 
-async function activeProperty(context: { organizationId: string; email: string }, requested?: string | null) {
+export async function activeProperty(context: { organizationId: string; email: string }, requested?: string | null) {
   let canonical:string|null=null;
   try{
     canonical=(await database().prepare(`SELECT canonical_property_id FROM canonical_workspace_profiles
@@ -79,7 +79,7 @@ async function activeProperty(context: { organizationId: string; email: string }
   return property ?? null;
 }
 
-async function seedAgents(organizationId: string) {
+export async function seedAgents(organizationId: string) {
   const now = new Date().toISOString();
   for (const [key, name, department, purpose, risk] of AGENTS) {
     await database().prepare(`INSERT OR IGNORE INTO ai_runtime_agent_registry
@@ -153,108 +153,6 @@ export async function agentStudio(userEmail: string, propertyId?: string | null)
     capabilities: capabilities.results, handoffs: handoffs.results,
     commandSessions:commandSessions.results,commandMessages:commandMessages.results,
     modelConnected: Boolean(vaultKey || process.env.OPENAI_API_KEY) };
-}
-
-function countOf(row: any) { return Number(row?.count ?? 0); }
-
-export async function runDigitalEmployeeCommand(userEmail:string,input:Record<string,unknown>){
-  const agentKey=String(input.agentKey||"front-desk").trim().slice(0,80);
-  const prompt=String(input.prompt||input.intent||"").trim().slice(0,4000);
-  const inputMode=String(input.inputMode||"TEXT")==="VOICE_TRANSCRIPT"?"VOICE_TRANSCRIPT":"TEXT";
-  if(prompt.length<3)throw new Error("Tell the Digital Employee what outcome you need.");
-  const run=await beginAgentRun(userEmail,agentKey,prompt);if(!run)return null;
-  const now=new Date().toISOString();
-  const priorSession=String(input.sessionId||"");
-  let sessionId=priorSession;
-  if(sessionId){
-    const valid=await database().prepare(`SELECT id FROM digital_employee_command_sessions
-      WHERE id=? AND organization_id=? AND property_id=? AND agent_key=?`).bind(sessionId,
-        run.context.organizationId,run.property.id,agentKey).first<any>();
-    if(!valid)sessionId="";
-  }
-  if(!sessionId){
-    sessionId=crypto.randomUUID();
-    await database().prepare(`INSERT INTO digital_employee_command_sessions
-      (id,organization_id,property_id,agent_registry_id,agent_key,title,status,created_by,created_at,updated_at)
-      VALUES (?,?,?,?,?,?, 'OPEN',?,?,?)`).bind(sessionId,run.context.organizationId,run.property.id,
-        run.agent.id,agentKey,prompt.slice(0,100),run.context.email,now,now).run();
-  }
-  await database().prepare(`INSERT INTO digital_employee_command_messages
-    (id,session_id,organization_id,property_id,sender_type,input_mode,body,run_id,outcome_type,
-     evidence_json,created_by,created_at) VALUES (?,?,?,?, 'USER',?,?,?,'MESSAGE','[]',?,?)`)
-    .bind(crypto.randomUUID(),sessionId,run.context.organizationId,run.property.id,inputMode,prompt,
-      run.id,run.context.email,now).run();
-
-  const scope=[run.context.organizationId,run.property.id] as const;
-  const [openWork,urgentWork,inbox,inventory,cash,jobs,websites,rooms,staff]=await Promise.all([
-    database().prepare(`SELECT COUNT(*) count FROM operational_work_orders WHERE organization_id=? AND property_id=? AND status NOT IN ('CLOSED','COMPLETED')`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count FROM operational_work_orders WHERE organization_id=? AND property_id=? AND priority IN ('CRITICAL','HIGH') AND status NOT IN ('CLOSED','COMPLETED')`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count FROM communication_threads WHERE organization_id=? AND property_id=? AND status NOT IN ('CLOSED','RESOLVED')`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count,COALESCE(SUM(CASE WHEN quantity<=reorder_threshold THEN 1 ELSE 0 END),0) attention FROM supply_inventory WHERE organization_id=? AND property_id=?`).bind(...scope).first<any>(),
-    database().prepare(`SELECT business_date,total_cash_cents,status FROM cash_source_batches WHERE organization_id=? AND property_id=? AND active=1 ORDER BY business_date DESC,imported_at DESC LIMIT 1`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count FROM workforce_job_requisitions WHERE organization_id=? AND property_id=?`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count FROM website_factory_projects WHERE organization_id=? AND property_context_id=?`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(*) count FROM property_assets WHERE organization_id=? AND property_id=? AND asset_type='ROOM' AND status='ACTIVE'`).bind(...scope).first<any>(),
-    database().prepare(`SELECT COUNT(DISTINCT lower(a.user_email)) count FROM property_assignments a WHERE a.organization_id=? AND a.property_id=? AND a.status='ACTIVE'`).bind(...scope).first<any>(),
-  ]);
-  const facts={property:run.property.name,propertyCode:run.property.code,openWork:countOf(openWork),
-    urgentWork:countOf(urgentWork),openInbox:countOf(inbox),inventoryItems:countOf(inventory),
-    inventoryAttention:Number(inventory?.attention||0),latestCashCents:cash?.total_cash_cents??null,
-    cashBusinessDate:cash?.business_date??null,jobOpenings:countOf(jobs),websiteProjects:countOf(websites),
-    rooms:countOf(rooms),authorizedPeople:countOf(staff)};
-  await recordToolCall(run,"read_canonical_property_operating_facts",{prompt,agentKey},facts);
-
-  const normalized=prompt.toLowerCase();
-  const consequential=["refund","charge","payment","publish","delete","terminate","fire ","hire ","purchase","order parts","rate override","issue key","unlock","call police","shut down"];
-  const approvalRequired=consequential.some(term=>normalized.includes(term));
-  const specialized:Record<string,string>={
-    "front-desk":`${facts.openInbox} guest or internal conversations are open. I can triage them, prepare replies, create service work, and answer property questions; refunds, key issuance, and payment actions remain approval-gated.`,
-    "housekeeping-coordinator":`${facts.openWork} work items are open across the property and ${facts.urgentWork} are high or critical priority. I can prioritize room turns, prepare assignments, identify supply risk, and route photo/video exceptions.`,
-    "maintenance-dispatcher":`${facts.urgentWork} high/critical work items require attention. I can triage, assemble asset history, prepare a work plan, monitor SLA, and route physical repair and return-to-service verification to people.`,
-    "compliance-inspector":`I can build due-work queues, identify missing evidence, prepare inspection packets, and escalate overdue or life-safety items; a qualified person performs and signs physical inspections.`,
-    "inventory-planner":`${facts.inventoryItems} inventory items are recorded and ${facts.inventoryAttention} are at or below reorder threshold. I can reconcile photo/video count proposals and prepare purchasing recommendations for approval.`,
-    "website-manager":`${facts.websiteProjects} governed website project(s) are available. I can assemble verified property content, prepare template choices, identify missing public facts, and stage an approval-controlled draft.`,
-    "executive-briefing":`${facts.rooms} rooms, ${facts.authorizedPeople} authorized people, ${facts.openWork} open work items, and ${facts.openInbox} open communications are in the canonical workspace.`,
-    "cash-auditor":facts.latestCashCents==null?"No authorized cash source is available. I opened no false reconciliation and will wait for a PMS/email import or a governed manual upload.":`The latest authorized source for ${facts.cashBusinessDate} contains $${(Number(facts.latestCashCents)/100).toFixed(2)} in cash. I can compare employee denomination counts, check images, manager receipt counts, and custody handoffs; bank deposits and accounting postings remain human-controlled.`,
-    "hiring-manager":`${facts.jobOpenings} sample job opening(s) are available. I can prepare a property-aware description, channel drafts, approval packet, onboarding access locker, assigned-property ledger, and separation return/suspension checklist. Publishing, hiring, discipline, and termination decisions remain human-controlled.`,
-    "wedding-planner":`${facts.openInbox} open conversations were checked for event leads. I can create one governed wedding portfolio containing discovery questions, proposal, timeline, room-block assumptions, contract draft, payment milestones, and approval exceptions.`,
-    "event-manager":`${facts.openWork} operational work items and ${facts.openInbox} conversations were reviewed. I can turn a qualified inquiry into a dated event portfolio, coordinate departments, draft communications, and monitor unresolved dependencies.`,
-    "banquet-coordinator":`I can prepare a reviewable BEO, menu and dietary requirements, room-set plan, equipment list, service timeline, staffing request, change history, and day-of operating packet from verified event facts.`,
-    "network-engineer":`I can inspect the property network inventory and preserved map, prepare a UniFi design or diagnosis, create a reversible change plan, and produce acceptance and rollback tests. Credentials, live configuration pushes, and destructive actions require approval.`,
-    "phone-engineer":`I can inspect the phone inventory, prepare GDMS/Grandstream extensions and provisioning plans, diagnose registered-device issues, and produce pre-change, acceptance, and rollback reports. Live provisioning and emergency-number changes require approval.`,
-    "visual-qa-supervisor":`${facts.inventoryItems} property-ledger inventory items are available for matching. I can analyze governed sample evidence immediately and connected private images into reviewable count or quality proposals; I never invent counts or change inventory, room status, discipline, or safety disposition from vision alone.`,
-  };
-  const cashAnswer=facts.latestCashCents==null?"No authorized cash source is available yet.":
-    `The latest authorized source for ${facts.cashBusinessDate} contains $${(Number(facts.latestCashCents)/100).toFixed(2)} in cash. A physical drop still requires custody verification.`;
-  const responseText=normalized.includes("cash")?cashAnswer:
-    (specialized[agentKey]||`I reviewed the canonical ${run.property.name} workspace and prepared a property-scoped answer with evidence.`);
-  let approvalId:string|null=null;
-  if(approvalRequired){
-    approvalId=crypto.randomUUID();
-    await database().prepare(`INSERT INTO ai_approval_cases
-      (id,organization_id,property_id,run_id,action_type,risk_level,status,requested_by,assigned_role,reason,created_at)
-      VALUES (?,?,?,?,?,'HIGH','PENDING',?,'MANAGER',?,?)`).bind(approvalId,run.context.organizationId,
-        run.property.id,run.id,"DIGITAL_EMPLOYEE_COMMAND",run.context.email,
-        "The request may create an external, financial, access, employment, or irreversible action.",now).run();
-  }
-  const outcome=approvalRequired?"APPROVAL_REQUIRED":"COMPLETED";
-  const result={headline:approvalRequired?"Prepared for approval":`${run.agent.name} completed the review`,
-    executiveSummary:responseText,recommendedNextAction:approvalRequired?
-      "Review the prepared action in the approval queue; nothing external has executed.":
-      "Continue this conversation or open the cited module to act on the result.",facts,sessionId,approvalId};
-  await database().prepare(`INSERT INTO digital_employee_command_messages
-    (id,session_id,organization_id,property_id,sender_type,input_mode,body,run_id,outcome_type,
-     evidence_json,created_by,created_at) VALUES (?,?,?,?, 'DIGITAL_EMPLOYEE','SYSTEM',?,?,?,?, 'AAIQ_DIGITAL_EMPLOYEE',?)`)
-    .bind(crypto.randomUUID(),sessionId,run.context.organizationId,run.property.id,responseText,run.id,
-      outcome,JSON.stringify([{source:"CANONICAL_PROPERTY_FACTS",facts}]),now).run();
-  await database().prepare(`UPDATE digital_employee_command_sessions SET status=?,updated_at=? WHERE id=?`)
-    .bind(approvalRequired?"WAITING_FOR_HUMAN":"OPEN",now,sessionId).run();
-  await finishAgentRun(run,{status:approvalRequired?"NEEDS_REVIEW":"SUCCEEDED",confidence:.96,
-    sources:["property_contexts","operational_work_orders","communication_threads","supply_inventory",
-      "cash_source_batches","workforce_job_requisitions","website_factory_projects"],
-    evidence:[facts],plan:["Resolve canonical property","Read authorized facts","Apply role boundary","Return audited result"],
-    output:result,approvalStatus:approvalRequired?"HUMAN_REVIEW_REQUIRED":"NOT_REQUIRED"});
-  return {status:approvalRequired?"NEEDS_REVIEW":"SUCCEEDED",runId:run.id,sessionId,approvalId,response:responseText,facts};
 }
 
 export async function updateAgentPolicy(userEmail:string,input:Record<string,unknown>){
