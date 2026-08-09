@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS video_inventory_detection_audit_idx;
+DROP INDEX IF EXISTS video_inventory_detection_scope_idx;
+DROP TABLE IF EXISTS video_inventory_detection_items;
+DROP INDEX IF EXISTS digital_employee_message_session_idx;
+DROP INDEX IF EXISTS digital_employee_session_scope_idx;
+DROP TABLE IF EXISTS digital_employee_command_messages;
+DROP TABLE IF EXISTS digital_employee_command_sessions;
+DROP INDEX IF EXISTS canonical_workspace_property_idx;
+DROP TABLE IF EXISTS canonical_workspace_profiles;

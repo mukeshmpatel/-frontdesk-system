@@ -1,0 +1,9 @@
+DROP TRIGGER IF EXISTS maintenance_case_events_append_only_delete;
+DROP TRIGGER IF EXISTS maintenance_case_events_append_only_update;
+DROP TABLE IF EXISTS maintenance_return_to_service_reviews;
+DROP TABLE IF EXISTS maintenance_evidence_links;
+DROP TABLE IF EXISTS maintenance_parts_reservations;
+DROP TABLE IF EXISTS maintenance_repair_actions;
+DROP TABLE IF EXISTS maintenance_diagnoses;
+DROP TABLE IF EXISTS maintenance_case_events;
+DROP TABLE IF EXISTS maintenance_cases;

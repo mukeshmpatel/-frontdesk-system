@@ -1,0 +1,3 @@
+import{requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";
+import IntegrationCenterClient from "./integration-center-client";
+export const dynamic="force-dynamic";export default async function IntegrationCenterPage(){const user=await requireChatGPTUser("/aaiq-integration-center");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_INTEGRATION_CENTER"))return <AaiqAccessDenied moduleName="AAIQ Governed Integrations"/>;return <IntegrationCenterClient/>}

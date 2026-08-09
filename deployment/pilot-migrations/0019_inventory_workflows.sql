@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS inventory_transactions(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,sku TEXT NOT NULL,transaction_type TEXT NOT NULL,quantity INTEGER NOT NULL,balance_after INTEGER NOT NULL,reason TEXT NOT NULL,reference_id TEXT,actor_email TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS inventory_transaction_ledger_idx ON inventory_transactions(organization_id,sku,created_at);
+CREATE TABLE IF NOT EXISTS inventory_requisitions(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,department TEXT NOT NULL,sku TEXT NOT NULL,quantity INTEGER NOT NULL,reason TEXT NOT NULL,status TEXT NOT NULL,requested_by TEXT NOT NULL,approved_by TEXT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS inventory_requisition_queue_idx ON inventory_requisitions(organization_id,status,department,created_at);
+CREATE TABLE IF NOT EXISTS inventory_vendors(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,name TEXT NOT NULL,contact_email TEXT,lead_time_days INTEGER NOT NULL,minimum_order_cents INTEGER NOT NULL,status TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS inventory_vendor_idx ON inventory_vendors(organization_id,status,name);

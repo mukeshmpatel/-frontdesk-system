@@ -1,0 +1,3 @@
+import{requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";
+import CommunicationCenterClient from "./communication-center-client";
+export const dynamic="force-dynamic";export default async function CommunicationCenterPage(){const user=await requireChatGPTUser("/aaiq-communication-center");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_COMMUNICATION_CENTER"))return <AaiqAccessDenied moduleName="AAIQ Master Inbox"/>;return <CommunicationCenterClient/>}

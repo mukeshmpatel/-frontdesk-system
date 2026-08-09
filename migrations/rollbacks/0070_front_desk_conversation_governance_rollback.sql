@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS conversation_intelligence_findings; DROP TABLE IF EXISTS conversation_consent_events; DROP TABLE IF EXISTS conversation_capture_sessions; DROP TABLE IF EXISTS conversation_capture_policies;

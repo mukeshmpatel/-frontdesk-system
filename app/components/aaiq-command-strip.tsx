@@ -1,0 +1,9 @@
+"use client";
+import{useEffect,useState}from"react";
+
+export default function AaiqCommandStrip(){
+ const[data,setData]=useState<any>(null);
+ useEffect(()=>{fetch("/api/v1/command-center",{cache:"no-store"}).then(r=>r.json()).then(setData).catch(()=>setData({}))},[]);
+ if(!data?.profile)return null;const action=data.primaryAction;
+ return <section className="aaiq-command-strip"><header><div><p>AAIQ role command</p><h2>{data.profile.department.replaceAll("_"," ")} · {data.profile.roleTier}</h2></div><nav className="command-count-links" aria-label="Task report shortcuts"><a href="/reports?tasks=open"><strong>{data.openCount}</strong> assigned/open →</a><a className="urgent" href="/reports?tasks=urgent"><strong>{data.criticalCount}</strong> urgent →</a></nav></header><div className="aaiq-command-grid"><article className={action?.priority==="CRITICAL"?"critical":""}><small>Primary next action</small><strong>{action?.title??"Your queue is clear"}</strong><span>{action?`${action.department} · ${action.status} · ${action.progress}%`:"AAIQ found no open work requiring your role."}</span>{data.modules.operations&&<a href="/property-operations">{action?"Continue work →":"Open operations →"}</a>}</article>{data.modules.actions&&<a href="/action-center"><small>Attention center</small><strong>Review approvals, reminders and calendar</strong><span>Open your unified workday command center.</span></a>}{data.modules.assets&&<a href="/aaiq-asset-registry"><small>Property integrity</small><strong>{data.assetFindings} asset data findings</strong><span>Review rooms, equipment, passports and floor health.</span></a>}{data.modules.reports&&<a href="/reports"><small>Management intelligence</small><strong>Open AAIQ Reporting</strong><span>Analyze current operations and drill to source records.</span></a>}</div></section>;
+}

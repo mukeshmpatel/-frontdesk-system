@@ -1,0 +1,80 @@
+name: AAIQ Real-Time OS
+
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - "services/realtime-os/**"
+      - ".github/workflows/realtime-os-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/realtime-os/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: realtime-os-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/realtime-os
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aaiq_test
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: aaiq_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aaiq_test -d aaiq_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://aaiq_test:test-password@127.0.0.1:5432/aaiq_test
+      REDIS_URL: redis://127.0.0.1:6379
+      OPENAI_API_KEY: test-key-with-sufficient-length-for-validation
+      JWT_SECRET: test-secret-with-at-least-thirty-two-characters
+      PUBLIC_BASE_URL: https://aaiq.example.com
+      ROOM_TELEMETRY_API_KEY: test-room-telemetry-key-at-least-thirty-two-characters
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/realtime-os/package-lock.json
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run prisma:migrate
+      - run: npm run build
+      - run: npm test
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+        env:
+          POSTGRES_PASSWORD: test-postgres-password
+          REDIS_PASSWORD: test-redis-password
+          ROOM_TELEMETRY_API_KEY: test-room-telemetry-key-at-least-thirty-two-characters
+          EDGE_NODE_ID: test-edge-node
+          EDGE_SYNC_API_URL: https://aaiq.example.com
+          EDGE_SYNC_API_KEY: test-edge-sync-key-at-least-thirty-two-characters
+          EDGE_LOCAL_API_KEY: test-edge-local-key-at-least-thirty-two-characters

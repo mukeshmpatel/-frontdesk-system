@@ -1,0 +1,3 @@
+import{requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";import CustomerIntelligenceClient from"./customer-intelligence-client";import"./customer-intelligence.css";import"./customer-intelligence-scoped.css";
+export const dynamic="force-dynamic";
+export default async function CustomerIntelligencePage(){const user=await requireChatGPTUser("/aaiq-customer-intelligence");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_CUSTOMER_INTELLIGENCE"))return <AaiqAccessDenied moduleName="AAIQ Customer Intelligence"/>;return <CustomerIntelligenceClient/>}

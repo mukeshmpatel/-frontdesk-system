@@ -1,0 +1,52 @@
+import { z } from "zod";
+
+const emptyToUndefined = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(
+  (value) => value === "" ? undefined : value,
+  schema.optional(),
+);
+
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
+  OPENAI_API_KEY: z.string().min(20),
+  OPENAI_MODEL: z.string().default("gpt-4.1-mini"),
+  JWT_SECRET: z.string().min(32),
+  PORT: z.coerce.number().int().min(1).max(65535).default(4010),
+  TWILIO_ACCOUNT_SID: emptyToUndefined(z.string().regex(/^AC[a-f0-9]{32}$/i)),
+  TWILIO_AUTH_TOKEN: emptyToUndefined(z.string().min(20)),
+  TWILIO_PHONE_NUMBER: emptyToUndefined(z.string().regex(/^\+[1-9]\d{7,14}$/)),
+  PUBLIC_BASE_URL: z.string().url(),
+  CHROMIUM_EXECUTABLE_PATH: emptyToUndefined(z.string()),
+  ROOM_TELEMETRY_API_KEY: emptyToUndefined(z.string().min(32)),
+  HVAC_GATEWAY_URL: emptyToUndefined(z.string().url()),
+  HVAC_API_KEY: emptyToUndefined(z.string().min(20)),
+  SUPPLIER_API_URL: emptyToUndefined(z.string().url()),
+  SUPPLIER_API_KEY: emptyToUndefined(z.string().min(20)),
+  FLIGHT_TRACKER_API_URL: emptyToUndefined(z.string().url()),
+  FLIGHT_TRACKER_API_KEY: emptyToUndefined(z.string().min(20)),
+  BIOMETRIC_PROVIDER_URL: emptyToUndefined(z.string().url()),
+  BIOMETRIC_PROVIDER_API_KEY: emptyToUndefined(z.string().min(20)),
+  SMART_LOCK_API_URL: emptyToUndefined(z.string().url()),
+  SMART_LOCK_API_KEY: emptyToUndefined(z.string().min(20)),
+  CREDENTIAL_SIGNING_SECRET: emptyToUndefined(z.string().min(32)),
+  APPLE_WALLET_BASE_URL: emptyToUndefined(z.string().url()),
+  GOOGLE_WALLET_BASE_URL: emptyToUndefined(z.string().url()),
+  LOCAL_HARDWARE_ENCRYPTION_KEY: emptyToUndefined(z.string().regex(/^[a-f0-9]{64}$/i)),
+  EDGE_NODE_ID: emptyToUndefined(z.string().min(3).max(100)),
+  EDGE_SQLITE_PATH: emptyToUndefined(z.string().min(1)),
+  EDGE_SYNC_API_URL: emptyToUndefined(z.string().url()),
+  EDGE_SYNC_API_KEY: emptyToUndefined(z.string().min(32)),
+  SMTP_HOST: emptyToUndefined(z.string().min(1)),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_SECURE: z.string().default("false").transform((value) => value === "true"),
+  SMTP_USER: emptyToUndefined(z.string().min(1)),
+  SMTP_PASS: emptyToUndefined(z.string().min(1)),
+  SMTP_FROM: emptyToUndefined(z.string().email()),
+  SLACK_OPERATIONS_WEBHOOK_URL: emptyToUndefined(z.string().url()),
+  NETWORK_GATEWAY_URL: emptyToUndefined(z.string().url()),
+  NETWORK_GATEWAY_API_KEY: emptyToUndefined(z.string().min(20)),
+  GUEST_WIFI_SSID: z.string().min(1).max(64).default("Wyndham-Garden-Salina"),
+});
+
+export const config = schema.parse(process.env);

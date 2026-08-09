@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS compliance_automation_runs;
+DROP TRIGGER IF EXISTS compliance_case_events_append_only_delete;
+DROP TRIGGER IF EXISTS compliance_case_events_append_only_update;
+DROP INDEX IF EXISTS compliance_event_trace_idx;
+DROP TABLE IF EXISTS compliance_case_events;
+DROP INDEX IF EXISTS compliance_review_case_idx;
+DROP TABLE IF EXISTS compliance_case_reviews;
+DROP INDEX IF EXISTS compliance_evidence_case_idx;
+DROP TABLE IF EXISTS compliance_evidence_links;
+DROP INDEX IF EXISTS compliance_response_latest_idx;
+DROP TABLE IF EXISTS compliance_inspection_responses;
+DROP INDEX IF EXISTS compliance_case_queue_idx;
+DROP TABLE IF EXISTS compliance_inspection_cases;
+DROP INDEX IF EXISTS compliance_program_item_idx;
+DROP TABLE IF EXISTS compliance_program_items;
+DROP INDEX IF EXISTS compliance_program_due_idx;
+DROP TABLE IF EXISTS compliance_programs;

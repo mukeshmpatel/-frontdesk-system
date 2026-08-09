@@ -1,0 +1,30 @@
+.automation-control {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  margin-top: 18px; padding: 22px 26px; border: 1px solid #9bcbb4;
+  border-radius: 18px; background: #eef9f3;
+}
+.automation-control small { font-weight: 900; letter-spacing: .12em; color: #266648; }
+.automation-control h2 { margin: 5px 0; color: #173d2d; }
+.automation-control p { max-width: 900px; margin: 0; color: #45675a; line-height: 1.55; }
+.automation-control button, .human-action > a, .human-action > button, .decision-actions button {
+  padding: 13px 17px; border: 0; border-radius: 10px; background: #173f69;
+  color: #fff; font-weight: 900; text-decoration: none;
+}
+.launch-task { grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.1fr); align-items: start; }
+.task-summary p { margin: 8px 0 0; color: #5a4423; line-height: 1.5; }
+.task-proof { padding: 14px; border-radius: 11px; background: #eaf7ef; color: #24583e; }
+.task-proof span { line-height: 1.45; }
+.task-proof a { color: #174e34; font-weight: 800; }
+.human-action { display: flex !important; flex-wrap: wrap; align-items: center; gap: 10px; }
+.human-action > button { background: #eaf1f8; color: #173f69; }
+.human-action details { width: 100%; margin-top: 8px; padding: 12px; border: 1px solid #d2dce6; border-radius: 10px; background: #f8fafc; }
+.human-action summary { cursor: pointer; color: #4d6075; font-weight: 800; }
+.human-action form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.human-action form .task-note { grid-column: 1 / -1; }
+.decision-actions { display: flex !important; gap: 10px; flex-wrap: wrap; }
+.decision-actions .secondary { background: #eef2f6; color: #173f69; }
+@media (max-width: 700px) {
+  .automation-control { align-items: flex-start; flex-direction: column; }
+  .launch-task, .human-action form { grid-template-columns: 1fr; }
+  .human-action form .task-note { grid-column: 1; }
+}

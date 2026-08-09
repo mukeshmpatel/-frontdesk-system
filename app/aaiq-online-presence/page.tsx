@@ -1,0 +1,3 @@
+import{requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";
+import OnlinePresenceClient from "./online-presence-client";
+export const dynamic="force-dynamic";export default async function OnlinePresencePage(){const user=await requireChatGPTUser("/aaiq-online-presence");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_ONLINE_PRESENCE"))return <AaiqAccessDenied moduleName="AAIQ Online Presence & Technology"/>;return <OnlinePresenceClient/>}

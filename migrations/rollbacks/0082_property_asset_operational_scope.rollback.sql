@@ -1,0 +1,10 @@
+DROP INDEX IF EXISTS amenity_access_property_idx;
+DROP INDEX IF EXISTS cleaning_velocity_property_idx;
+DROP INDEX IF EXISTS property_asset_attachment_property_idx;
+DROP INDEX IF EXISTS property_asset_import_property_idx;
+DROP INDEX IF EXISTS property_asset_audit_property_idx;
+ALTER TABLE amenity_access_events DROP COLUMN property_id;
+ALTER TABLE cleaning_velocity_events DROP COLUMN property_id;
+ALTER TABLE property_asset_attachments DROP COLUMN property_id;
+ALTER TABLE property_asset_imports DROP COLUMN property_id;
+ALTER TABLE property_asset_audit DROP COLUMN property_id;

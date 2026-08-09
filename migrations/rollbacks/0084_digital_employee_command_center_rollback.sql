@@ -1,0 +1,14 @@
+DROP INDEX IF EXISTS idx_de_confidence_role;
+DROP INDEX IF EXISTS idx_de_correction_review;
+DROP INDEX IF EXISTS idx_de_intervention_work;
+DROP INDEX IF EXISTS idx_de_execution_stream;
+DROP INDEX IF EXISTS idx_de_work_control_state;
+DROP INDEX IF EXISTS idx_de_shift_roster;
+DROP TABLE IF EXISTS digital_employee_task_confidence;
+DROP TABLE IF EXISTS digital_employee_playbook_proposals;
+DROP TABLE IF EXISTS digital_employee_correction_signals;
+DROP TABLE IF EXISTS digital_employee_role_knowledge;
+DROP TABLE IF EXISTS digital_employee_interventions;
+DROP TABLE IF EXISTS digital_employee_execution_events;
+DROP TABLE IF EXISTS digital_employee_work_controls;
+DROP TABLE IF EXISTS digital_employee_shift_sessions;

@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS workforce_separation_cases; DROP TABLE IF EXISTS workforce_property_custody; DROP TABLE IF EXISTS workforce_access_locker; DROP TABLE IF EXISTS workforce_onboarding_cases; DROP TABLE IF EXISTS workforce_job_requisitions;

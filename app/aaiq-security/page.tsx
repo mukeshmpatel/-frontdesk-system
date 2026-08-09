@@ -1,0 +1,3 @@
+import{requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";
+import SecurityBoundaryClient from "./security-boundary-client";
+export const dynamic="force-dynamic";export default async function SecurityPage(){const user=await requireChatGPTUser("/aaiq-security");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_SECURITY"))return <AaiqAccessDenied moduleName="AAIQ Location & IP Security"/>;return <SecurityBoundaryClient/>}
