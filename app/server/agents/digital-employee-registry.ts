@@ -12,9 +12,9 @@ import { communicationCenter, createReplyDraft } from "../../../db/communication
 import { housekeepingAssignmentsToday } from "../../../db/housekeeping-departures";
 import { complianceCenter } from "../../../db/compliance-inspections";
 import { propertyIntelligence } from "../../../db/property-intelligence";
-import { reviewCenter } from "../../../db/review-intelligence";
+import { reviewCenter, updateResponseDraft } from "../../../db/review-intelligence";
 import { websiteFactory } from "../../../db/website-factory";
-import { workforceLifecycleCenter } from "../../../db/workforce-lifecycle";
+import { workforceLifecycleAction, workforceLifecycleCenter } from "../../../db/workforce-lifecycle";
 import { eventWorkforceCenter } from "../../../db/event-workforce";
 import { taxCenter } from "../../../db/tax-preparation";
 import { cashReconciliationDetail } from "../../../db/cash-reconciliation";
@@ -63,6 +63,42 @@ const proposeGuestReplyAction: GroundedActionTool = {
   },
 };
 
+const proposeReviewResponseAction: GroundedActionTool = {
+  name: "propose_review_response",
+  description: "Replace the response draft for a specific guest review from read_review_center (every review is seeded with a generic template response at intake) with a specific, context-aware reply. This only updates the PENDING_APPROVAL draft for a human to review and approve before it can be posted; it never publishes anything. Requires administrator access — if the caller is not an admin, this returns an error and the draft is left unchanged.",
+  parameters: z.object({
+    reviewId: z.string().describe("The id of the guest review from read_review_center to draft a response for."),
+    responseText: z.string().min(1).describe("The proposed response for a human to review, edit, and approve before it can be posted."),
+  }),
+  execute: async (userEmail, params) => {
+    const reviewId = String(params.reviewId ?? "");
+    const responseText = String(params.responseText ?? "");
+    const result = await updateResponseDraft(userEmail, reviewId, responseText, "SAVE");
+    if (!result) return { error: "Unable to update this review's draft — administrator access is required, or the review was not found." };
+    return result;
+  },
+};
+
+const proposeJobRequisitionAction: GroundedActionTool = {
+  name: "propose_job_requisition",
+  description: "Draft a new job requisition for a specific role and department, grounded in what read_workforce_lifecycle showed about this property. This only creates a PENDING_APPROVAL requisition and publication drafts for a human to review and approve; it never posts anything externally.",
+  parameters: z.object({
+    title: z.string().min(3).describe("The job title to post, e.g. 'Front Desk Associate'."),
+    department: z.string().min(2).describe("The department this role supports, e.g. HOUSEKEEPING, FRONT_DESK, MAINTENANCE."),
+    description: z.string().min(20).describe("A specific job description grounded in what read_workforce_lifecycle showed about this property — not generic placeholder text."),
+  }),
+  execute: async (userEmail, params) => {
+    const result = await workforceLifecycleAction(userEmail, {
+      action: "CREATE_REQUISITION",
+      title: String(params.title ?? ""),
+      department: String(params.department ?? ""),
+      description: String(params.description ?? ""),
+    });
+    if (!result) return { error: "Unable to create a job requisition right now." };
+    return result;
+  },
+};
+
 export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "executive-briefing": {
     agentName: "AAIQ Digital General Manager",
@@ -102,8 +138,9 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "review-manager": {
     agentName: "AAIQ Review Manager",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Review Manager. Analyze recent guest reviews and open recovery cases. Identify unanswered reviews and recurring complaint themes. Draft response direction only; publishing remains approval-gated.`,
+    instructions: `${GOVERNANCE_RULES}\nYou are the Review Manager. Analyze recent guest reviews and open recovery cases. Every review is seeded with a generic template response at intake — for reviews where you can write something more specific and genuinely better than that template, call propose_review_response with the review's exact reviewId and your improved response; leave the rest alone rather than rewriting an already-good draft. This only updates a PENDING_APPROVAL draft, never publishes anything. If the tool reports that administrator access is required, say so plainly instead of claiming the response was updated.`,
     tools: [reviewTool],
+    actions: [proposeReviewResponseAction],
   },
   "website-manager": {
     agentName: "AAIQ Website Manager",
@@ -138,8 +175,9 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "hiring-manager": {
     agentName: "AAIQ Digital Hiring & Onboarding Manager",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Hiring & Onboarding Manager. Review open requisitions, onboarding cases, and access-locker status. Publishing job posts, hiring, and access activation remain human-controlled.`,
+    instructions: `${GOVERNANCE_RULES}\nYou are the Hiring & Onboarding Manager. Review open requisitions, onboarding cases, and access-locker status. When asked to open a new role, call propose_job_requisition with a specific title, department, and a description grounded in this property's actual profile — this only creates a PENDING_APPROVAL requisition, never posts anything externally. Publishing job posts, hiring, and access activation remain human-controlled.`,
     tools: [centerTool("read_workforce_lifecycle", "Read job requisitions, onboarding cases, access lockers, and separation cases for the property.", workforceLifecycleCenter)],
+    actions: [proposeJobRequisitionAction],
   },
   "wedding-planner": {
     agentName: "AAIQ Digital Wedding Planner",
