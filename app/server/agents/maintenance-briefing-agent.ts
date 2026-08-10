@@ -1,9 +1,8 @@
 import { Agent, OpenAIProvider, Runner, tool } from "@openai/agents";
 import { z } from "zod";
 import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, proposeApprovalCase, recordToolCall } from "../../../db/agent-platform";
-import { getIntegrationCredential } from "../../../db/open-source-integrations";
 import { documentVaultReferences } from "../../../db/document-vault";
-import { buildOutcomeRecord, correctionsInstructionAddendum, type GroundedOperationsOutput } from "./agent-runtime";
+import { buildOutcomeRecord, correctionsInstructionAddendum, resolveModelConnection, type GroundedOperationsOutput } from "./agent-runtime";
 
 const actionTakenSchema = z.object({
   tool: z.string(), summary: z.string(), referenceId: z.string().nullable(),
@@ -55,10 +54,8 @@ export function normalizeMaintenanceBriefing(briefing: {
 export async function runMaintenanceBriefing(userEmail: string, intent: string) {
   const run = await beginAgentRun(userEmail, "maintenance-dispatcher", intent);
   if (!run) return null;
-  const apiKey = await getIntegrationCredential(
-    run.context.organizationId, "OPENAI_AGENTS", "OPENAI_API_KEY",
-  ) || process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  const connection = await resolveModelConnection(run.context.organizationId);
+  if (!connection) {
     const fallback = await createAgentFallback(run, "INTEGRATION_UNAVAILABLE",
       "The model connection is not configured in this runtime. The request has been preserved for manual completion.");
     return { runId: run.id, status: "MANUAL_FALLBACK", fallback };
@@ -140,7 +137,7 @@ export async function runMaintenanceBriefing(userEmail: string, intent: string) 
     const correctionsAddendum = await correctionsInstructionAddendum(run.context.organizationId, String(run.property.id), "maintenance-dispatcher");
     const agent = new Agent({
       name: "AAIQ Maintenance Dispatcher",
-      model: "gpt-5.4-mini",
+      model: connection.model,
       instructions: `You are a governed hotel maintenance briefing agent. Use only the supplied
 property-scoped tools. Cite source record IDs in every priority. Never invent work, assets, warranties,
 parts, safety facts, or compliance obligations. Distinguish missing data. Recommend exactly one next
@@ -156,7 +153,7 @@ third party.` + correctionsAddendum,
       outputType: briefingSchema,
     });
     const runner = new Runner({
-      modelProvider: new OpenAIProvider({ apiKey, useResponses: true }),
+      modelProvider: new OpenAIProvider({ apiKey: connection.apiKey, baseURL: connection.baseURL, useResponses: connection.useResponses }),
     });
     const result = await runner.run(agent,
       `${intent || "Prepare my maintenance briefing."}\nActive property: ${run.property.name} (${run.property.code}).`);

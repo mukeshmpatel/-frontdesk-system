@@ -145,6 +145,30 @@ export type GroundedAgentRunResult =
   | { status: "MANUAL_FALLBACK"; runId: string; fallback: unknown };
 
 const AGENT_MODEL = "gpt-5.4-mini";
+const GEMINI_MODEL = "gemini-2.5-flash";
+
+export type ModelConnection = { apiKey: string; baseURL?: string; useResponses: boolean; providerLabel: string; model: string };
+
+/**
+ * Resolves which configured model to run an agent on: OpenAI first (the
+ * existing, primary path), falling back to Google Gemini via its published
+ * OpenAI-compatible endpoint when no OpenAI key is configured but a Google
+ * AI key is. Anthropic is intentionally not offered here — Anthropic
+ * publishes no OpenAI-compatible endpoint, so it cannot be wired through
+ * this same @openai/agents-based tool-calling runtime without a separate,
+ * parallel integration this codebase does not have. Returns null when
+ * nothing is configured, exactly like the OpenAI-only check this replaces.
+ */
+export async function resolveModelConnection(organizationId: string): Promise<ModelConnection | null> {
+  const openaiKey = await getIntegrationCredential(organizationId, "OPENAI_AGENTS", "OPENAI_API_KEY") || process.env.OPENAI_API_KEY;
+  if (openaiKey) return { apiKey: openaiKey, useResponses: true, providerLabel: "OpenAI", model: AGENT_MODEL };
+  const googleKey = await getIntegrationCredential(organizationId, "GOOGLE_AI", "GOOGLE_AI_API_KEY");
+  if (googleKey) return {
+    apiKey: googleKey, baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+    useResponses: false, providerLabel: "Google Gemini", model: GEMINI_MODEL,
+  };
+  return null;
+}
 
 /**
  * Turns recent manager rejections of this agent's proposals into a short
@@ -170,10 +194,8 @@ export async function runGroundedOperationsAgent(
   const run = await beginAgentRun(userEmail, agentKey, intent);
   if (!run) return null;
 
-  const apiKey = await getIntegrationCredential(
-    run.context.organizationId, "OPENAI_AGENTS", "OPENAI_API_KEY",
-  ) || process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  const connection = await resolveModelConnection(run.context.organizationId);
+  if (!connection) {
     const fallback = await createAgentFallback(run, "INTEGRATION_UNAVAILABLE",
       "The model connection is not configured in this runtime. The request has been preserved for manual completion.");
     return { runId: run.id, status: "MANUAL_FALLBACK", fallback };
@@ -214,13 +236,13 @@ export async function runGroundedOperationsAgent(
   try {
     const agent = new Agent({
       name: config.agentName,
-      model: AGENT_MODEL,
+      model: connection.model,
       instructions: config.instructions + correctionsAddendum,
       tools: [...runtimeTools, ...actionTools],
       outputType: groundedOperationsSchema,
     });
     const runner = new Runner({
-      modelProvider: new OpenAIProvider({ apiKey, useResponses: true }),
+      modelProvider: new OpenAIProvider({ apiKey: connection.apiKey, baseURL: connection.baseURL, useResponses: connection.useResponses }),
     });
     const result = await runner.run(agent,
       `${intent || "Prepare my briefing."}\nActive property: ${run.property.name} (${run.property.code}).`);

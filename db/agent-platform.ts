@@ -27,6 +27,7 @@ const AGENTS = [
   ["network-engineer", "Digital Network Engineer", "TECHNOLOGY", "Maintains network maps, prepares UniFi plans, diagnoses incidents, and produces approval-controlled configuration and test plans.", "HIGH"],
   ["phone-engineer", "Digital Phone System Engineer", "TECHNOLOGY", "Maintains GDMS and Grandstream inventories, extension plans, diagnosis, provisioning checklists, and verification reports.", "HIGH"],
   ["visual-qa-supervisor", "Digital Visual QA Supervisor", "QUALITY", "Converts governed room photos or video into reviewable housekeeping, maintenance, brand, and inventory evidence.", "MEDIUM"],
+  ["ask-aaiq", "AAIQ Assistant", "GENERAL", "Answers questions from AAIQ's own records when it can, and clearly-labeled general knowledge when a question is outside AAIQ's scope.", "LOW"],
 ] as const;
 
 const TOOL_MATRIX: Record<string, string[]> = {

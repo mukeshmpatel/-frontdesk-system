@@ -6,6 +6,7 @@ import { authorizedPropertyScope } from "./property-scope";
 const DEFINITIONS = [
   ["AAIQ_NATIVE_COMMS", "AAIQ Native Communications", "COMMUNICATION_ORCHESTRATION", "Embedded AAIQ runtime", "AAIQ-NATIVE", "ACTIVE"],
   ["OPENAI_AGENTS", "OpenAI Agents SDK", "AGENT_RUNTIME", "Embedded TypeScript runtime", "MIT", "ACTIVE"],
+  ["GOOGLE_AI", "Google AI (Gemini)", "AGENT_RUNTIME", "Google's OpenAI-compatible Gemini endpoint", "PROPRIETARY-API", "CONFIGURATION_REQUIRED"],
   ["LANGGRAPH", "LangGraph.js", "DURABLE_ORCHESTRATION", "Embedded TypeScript runtime", "MIT", "ACTIVE"],
   ["QDRANT", "Qdrant", "ORGANIZATIONAL_MEMORY", "QDRANT_URL", "Apache-2.0", "CONFIGURATION_REQUIRED"],
   ["POSTIZ", "Postiz", "SOCIAL_PUBLISHING", "POSTIZ_BASE_URL", "AGPL-3.0", "CONFIGURATION_REQUIRED"],
@@ -33,6 +34,7 @@ const CREDENTIAL_FIELDS: Record<string, string[]> = {
   SUPERSET: ["SUPERSET_API_TOKEN", "SUPERSET_API_SECRET", "SUPERSET_ACCESS_TOKEN"],
   CHATWOOT: ["CHATWOOT_API_ACCESS_TOKEN", "CHATWOOT_ACCOUNT_ID"],
   OPENAI_AGENTS: ["OPENAI_API_KEY"],
+  GOOGLE_AI: ["GOOGLE_AI_API_KEY"],
   META_CAPI: ["META_CAPI_ACCESS_TOKEN", "META_CAPI_DATASET_ID", "META_CAPI_TEST_EVENT_CODE"],
 };
 

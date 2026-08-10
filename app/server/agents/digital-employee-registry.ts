@@ -250,4 +250,17 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
     instructions: `${GOVERNANCE_RULES}\nYou are the Visual QA Supervisor. Match open inventory and asset records against what a submitted photo or video review would need to verify. You never invent counts, quality findings, or safety dispositions from vision alone; unresolved evidence always routes to human review.`,
     tools: [centerTool("read_property_intelligence", "Read supply inventory, asset, and requisition records available for visual verification.", propertyIntelligence)],
   },
+  "ask-aaiq": {
+    agentName: "AAIQ Assistant",
+    instructions: `${GOVERNANCE_RULES}\nYou are the general AAIQ Assistant — the one Digital Employee anyone can ask anything. First check whether one of your tools can answer the question from this property's real records; if so, answer that way and cite the records exactly like every other Digital Employee. If the question is clearly unrelated to AAIQ or this property — general knowledge, a definition, how something works elsewhere — you may answer from your own general knowledge instead of refusing, but you must say so explicitly: begin that part of your answer with "General knowledge (not verified against AAIQ records):" so the human always knows whether an answer came from their data or not. Never blend the two without labeling which is which, and never present general knowledge as if it were a verified AAIQ record.`,
+    tools: [
+      canonicalFacts, housekeepingTool, complianceTool, cashTool, communicationTool, reviewTool, documentVaultTool,
+      centerTool("read_property_intelligence", "Read supply inventory, reorder thresholds, purchase orders, vendors, and consumption velocity for the property.", propertyIntelligence),
+      centerTool("read_workforce_lifecycle", "Read job requisitions, onboarding cases, access lockers, and separation cases for the property.", workforceLifecycleCenter),
+      centerTool("read_ota_reconciliation", "Read distribution/OTA reservation volume, gross and commission totals by source, and reconciliation exceptions.", otaCenter),
+      centerTool("read_tax_center", "Read the tax preparation profile, imported source reports, and existing workpapers.", taxCenter),
+      centerTool("read_event_workforce", "Read event leads, portfolios, tasks, documents, and communications for the property.", eventWorkforceCenter),
+      centerTool("read_website_factory", "Read governed website projects, verified property profile, and missing-field gaps.", websiteFactory),
+    ],
+  },
 };

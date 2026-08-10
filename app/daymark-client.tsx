@@ -6,6 +6,7 @@ import StaffOperations from "./staff-operations";
 import AaiqCommandStrip from "./components/aaiq-command-strip";
 import SmartQuickLinks from "./components/smart-quick-links";
 import AaiqDailyBriefing from "./components/aaiq-daily-briefing";
+import AaiqAssistant from "./components/aaiq-assistant";
 
 type View = "home" | "calendar" | "inbox" | "memories" | "sources" | "staff";
 type Reminder = {
@@ -903,6 +904,8 @@ export default function DaymarkClient({ displayName, userEmail, initialNow }: { 
             <AaiqCommandStrip />
 
             <AaiqDailyBriefing />
+
+            <AaiqAssistant />
 
             <SmartQuickLinks />
 
