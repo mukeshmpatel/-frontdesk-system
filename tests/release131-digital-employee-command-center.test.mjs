@@ -63,6 +63,13 @@ test("release 129 clone binding repairs remain explicit", async () => {
   assert.match(service, /risk, "SAMPLE_READY"/);
 });
 
+test("confidence-gated approval binds the active work run id instead of a hardcoded NULL", async () => {
+  const service = await read("db/digital-employee-command-center.ts");
+  assert.match(service, /INSERT INTO ai_approval_cases\(id,organization_id,property_id,run_id,action_type,risk_level,status,requested_by,assigned_role,reason,created_at\)/);
+  assert.doesNotMatch(service, /ai_approval_cases[^;]*VALUES\(\?,\?,\?,NULL,/, "run_id must never be hardcoded to NULL — the column is NOT NULL");
+  assert.match(service, /\.bind\(approvalId,context\.organizationId,property\.id,workId,`CONFIDENCE_/, "run_id must bind the active work_queue_id (the run this approval belongs to)");
+});
+
 test("release 130 provides route and root render recovery plus storage isolation", async () => {
   const [routeError, rootError, storage] = await Promise.all([read("app/error.tsx"), read("app/global-error.tsx"), read("lib/browser-storage.ts")]);
   assert.match(routeError, /Try again/);
