@@ -259,6 +259,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .shell-property-context span{color:#38698f;font-size:10px;font-weight:900;letter-spacing:.08em}
 .shell-property-context strong{max-width:480px;overflow:hidden;color:#152b43;font-size:14px;text-overflow:ellipsis;white-space:nowrap}
 .shell-property-context small{color:#597087;font-size:10px}
+.shell-persona-badge{justify-self:center;align-self:center;padding:5px 10px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.06em;white-space:nowrap;background:#eef3f8;color:#36516f}.shell-persona-badge.persona-platform-administration{background:#fdeee0;color:#8b4a12}.shell-persona-badge.persona-management-command{background:#e6f0ff;color:#1a4d8f}.shell-persona-badge.persona-my-work{background:#eafaf0;color:#1a7a3f}
 .aaiq-shell-body>header nav button{border:0;background:transparent;color:#173f68;font-size:12px;font-weight:900;cursor:pointer}
 .context-overlay{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;background:#0b1628b8;backdrop-filter:blur(8px)}
 .context-dialog{width:min(720px,100%);max-height:min(760px,92vh);overflow:auto;border:1px solid #cbd8e6;border-radius:22px;background:#fff;box-shadow:0 30px 80px #06122455}

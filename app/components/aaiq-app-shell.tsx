@@ -19,11 +19,13 @@ const departmentApps=[
  {key:"AAIQ_REPORTING",href:"/reports",name:"AAIQ Enterprise Reports",description:"Property health and drill-down reporting",group:"Management"},
  {key:"AAIQ_USER_MANAGEMENT",href:"/aaiq-user-management",name:"AAIQ User & Access",description:"Roles, permissions and property access",group:"Management"},
 ];
+const PERSONA_LABEL:Record<string,string>={PLATFORM_ADMINISTRATION:"Platform Administration",MANAGEMENT_COMMAND:"Management Command",MY_WORK:"My Work"};
 export default function AaiqAppShell({children}:{children:React.ReactNode}){
  const path=usePathname();
  const [context,setContext]=useState<{property?:{id:string;code:string;name:string;address?:string;timezone?:string;status?:string};properties?:Array<{id:string;code:string;name:string;address?:string;timezone?:string;status?:string}>;role?:string;currentUser?:{displayName:string}}|null>(null);
  const [allowedModules,setAllowedModules]=useState<Set<string>|null>(null);
  const [capabilityStatuses,setCapabilityStatuses]=useState<Record<string,{status:string;gap?:string}>>({});
+ const [persona,setPersona]=useState<string>("");
  const [propertyOpen,setPropertyOpen]=useState(false),[appsOpen,setAppsOpen]=useState(false),[appsGroup,setAppsGroup]=useState("Operations"),[query,setQuery]=useState(""),[switching,setSwitching]=useState("");
  const activeItem=useMemo(()=>AAIQ_NAVIGATION.find(item=>path===item.href||path.startsWith(`${item.href}/`))??AAIQ_NAVIGATION[0],[path]);
  const activeGroup=activeItem.group;
@@ -38,7 +40,8 @@ export default function AaiqAppShell({children}:{children:React.ReactNode}){
    fetchContext().then(data=>{if(data)setContext(data)}),
    fetch("/api/operations",{cache:"no-store"}).then(async response=>response.ok?((await response.json()) as any).operations:null),
    fetch("/api/v1/access-management",{cache:"no-store"}).then(async response=>response.ok?((await response.json()) as any).allowedModules:[]).then(keys=>setAllowedModules(new Set<string>(keys))),
-   fetch("/api/v1/capability-ledger?itemType=module",{cache:"no-store"}).then(async response=>response.ok?((await response.json()) as any).moduleStatuses:{}).then(statuses=>setCapabilityStatuses(statuses as Record<string,{status:string;gap?:string}>)).catch(()=>setCapabilityStatuses({}))
+   fetch("/api/v1/capability-ledger?itemType=module",{cache:"no-store"}).then(async response=>response.ok?((await response.json()) as any).moduleStatuses:{}).then(statuses=>setCapabilityStatuses(statuses as Record<string,{status:string;gap?:string}>)).catch(()=>setCapabilityStatuses({})),
+   fetch("/api/v1/experience-manifest",{cache:"no-store"}).then(async response=>response.ok?((await response.json()) as any).persona:"").then(setPersona).catch(()=>setPersona(""))
   ]).then(([,operations])=>{
    if(operations?.currentOpenEntry){setShiftReady("ready");return}
    setShiftReady("required");
@@ -63,6 +66,7 @@ export default function AaiqAppShell({children}:{children:React.ReactNode}){
    <header>
     <Link href="/">AAIQ Home</Link>
     <button className="shell-property-context" onClick={()=>setPropertyOpen(true)} aria-haspopup="dialog"><span>{context?.property?.code ?? "PROPERTY"} ▾</span><strong>{context?.property?.name ?? "Loading property context…"}</strong><small>{context?.property?.address??`${context?.currentUser?.displayName ?? "Authorized user"} · ${(context?.role ?? "staff").toUpperCase()}`}</small></button>
+    {persona&&<span className={`shell-persona-badge persona-${persona.toLowerCase().replaceAll("_","-")}`} title="Your resolved AAIQ experience">{PERSONA_LABEL[persona]??persona}</span>}
     <nav><button onClick={()=>setAppsOpen(true)}>AAIQ Apps</button>{(!allowedModules||allowedModules.has("AAIQ_ACTION_CENTER"))&&<Link href="/action-center">Actions</Link>}{(!allowedModules||allowedModules.has("AAIQ_REPORTING"))&&<Link href="/reports">Reports</Link>}{(!allowedModules||allowedModules.has("AAIQ_USER_MANAGEMENT"))&&<Link href="/aaiq-user-management">Access</Link>}</nav>
    </header>
    <div className="aaiq-module-context"><div><small>{activeGroup}</small><strong>{activeItem.label}</strong></div><span><i/> Clocked in · workspace ready</span></div>

@@ -105,3 +105,16 @@ export async function hasModuleAccess(userEmail:string,moduleKey:string){
   WHERE g.organization_id=? AND lower(g.user_email)=? AND g.module_key=? AND p.access_status='ACTIVE' LIMIT 1`)
   .bind(context.organizationId,context.email,moduleKey).first();return Boolean(row);
 }
+/** Every module key this user is authorized for, in one query — the same grant this
+ * enforces module by module in hasModuleAccess, batched for building a full manifest
+ * without one round trip per capability. */
+export async function authorizedCapabilityKeys(userEmail:string):Promise<string[]>{
+ await ensure();const context=await activeStaffContext(userEmail);if(!context)return [];
+ if(context.role==="admin")return [...AAIQ_CAPABILITY_KEYS];
+ await hydrate(context.organizationId,context.email);
+ const rows=await db().prepare(`SELECT g.module_key moduleKey FROM user_module_access g JOIN user_access_profiles p
+  ON p.organization_id=g.organization_id AND lower(p.user_email)=lower(g.user_email)
+  WHERE g.organization_id=? AND lower(g.user_email)=? AND p.access_status='ACTIVE'`)
+  .bind(context.organizationId,context.email).all<{moduleKey:string}>();
+ return rows.results.map(row=>row.moduleKey);
+}
