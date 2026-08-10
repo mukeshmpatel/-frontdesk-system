@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS eval_batches (
   CHECK(review_decision!='APPROVED' OR reviewed_by IS NOT NULL),
   CHECK(deployment_gate!='BLOCKED' OR review_decision!='APPROVED')
 );
+
 CREATE TABLE IF NOT EXISTS quality_shadow_classifications (
   shadow_audit_id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL,
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS quality_shadow_classifications (
   sampled_at TEXT NOT NULL,
   FOREIGN KEY(shadow_audit_id) REFERENCES shadow_audits(id)
 );
+
 CREATE TABLE IF NOT EXISTS quality_shadow_reviews (
   id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL,
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS quality_shadow_reviews (
   FOREIGN KEY(shadow_audit_id) REFERENCES shadow_audits(id),
   UNIQUE(organization_id,property_id,shadow_audit_id)
 );
+
 CREATE TABLE IF NOT EXISTS quality_monitor_runs (
   id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL,
@@ -66,7 +69,12 @@ CREATE TABLE IF NOT EXISTS quality_monitor_runs (
   started_at TEXT NOT NULL,
   completed_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_eval_batches_scope ON eval_batches(organization_id,property_id,role_code,started_at);
-CREATE INDEX IF NOT EXISTS idx_eval_batches_gate ON eval_batches(organization_id,property_id,deployment_gate,review_decision);
-CREATE INDEX IF NOT EXISTS idx_quality_shadow_scope ON quality_shadow_classifications(organization_id,property_id,severity,sampled_at);
-CREATE INDEX IF NOT EXISTS idx_quality_monitor_scope ON quality_monitor_runs(organization_id,property_id,completed_at);
+
+CREATE INDEX IF NOT EXISTS idx_eval_batches_scope
+  ON eval_batches(organization_id,property_id,role_code,started_at);
+CREATE INDEX IF NOT EXISTS idx_eval_batches_gate
+  ON eval_batches(organization_id,property_id,deployment_gate,review_decision);
+CREATE INDEX IF NOT EXISTS idx_quality_shadow_scope
+  ON quality_shadow_classifications(organization_id,property_id,severity,sampled_at);
+CREATE INDEX IF NOT EXISTS idx_quality_monitor_scope
+  ON quality_monitor_runs(organization_id,property_id,completed_at);

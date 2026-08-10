@@ -26,5 +26,5 @@ WHEN EXISTS (
     AND a.status='ACTIVE'
 )
 BEGIN
-  SELECT RAISE(ABORT,'Protected property administrator cannot be deleted; reassign the property administrator first.');
+  SELECT RAISE(ABORT,'Protected property administrator cannot be deleted, reassign the property administrator first.');
 END;
