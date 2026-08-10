@@ -183,7 +183,38 @@ export async function decideAgentApproval(userEmail:string,input:Record<string,u
   await recordSystemAudit({organizationId:context.organizationId,propertyId:property.id,
     eventType:`AI_ACTION_${decision}`,entityType:"AI_APPROVAL_CASE",entityId:id,authorType:"USER",
     authorId:context.email,correlationId:id,delta:{decision,reason}});
+  if(decision==="REJECTED"){
+    // Best-effort: only proceeds if the update above actually took (row exists, was PENDING,
+    // and belongs to an agent run) — a no-op decision on a missing/already-decided case
+    // leaves nothing to learn from and is silently skipped, matching this function's
+    // existing behavior of not erroring on that case.
+    const decided=await database().prepare(`SELECT run_id,action_type FROM ai_approval_cases
+      WHERE id=? AND organization_id=? AND property_id=? AND status='REJECTED'`)
+      .bind(id,context.organizationId,property.id).first<{run_id:string;action_type:string}>();
+    if(decided?.run_id){
+      const agent=await database().prepare(`SELECT a.agent_key FROM ai_agent_runs r
+        JOIN ai_runtime_agent_registry a ON a.id=r.agent_id WHERE r.id=?`)
+        .bind(decided.run_id).first<{agent_key:string}>();
+      if(agent?.agent_key)await database().prepare(`INSERT INTO ai_agent_correction_signals
+        (id,organization_id,property_id,agent_key,run_id,approval_case_id,action_type,correction_reason,corrected_by,created_at)
+        VALUES(?,?,?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),context.organizationId,property.id,
+        agent.agent_key,decided.run_id,id,decided.action_type,reason,context.email,now).run();
+    }
+  }
   return {id,status:decision};
+}
+
+/** The last few times a manager rejected this agent's proposal at this property, most
+ * recent first — injected into the agent's instructions so it can learn from correction
+ * without a human re-teaching it every time. Read-only; capturing a signal only ever
+ * happens in decideAgentApproval above, never here. */
+export async function recentAgentCorrections(organizationId: string, propertyId: string, agentKey: string, limit = 5) {
+  const rows = await database().prepare(`SELECT correction_reason,action_type,created_at
+    FROM ai_agent_correction_signals WHERE organization_id=? AND property_id=? AND agent_key=?
+    ORDER BY created_at DESC LIMIT ?`)
+    .bind(organizationId, propertyId, agentKey, limit)
+    .all<{ correction_reason: string; action_type: string; created_at: string }>();
+  return rows.results;
 }
 
 export async function teachSystemCapability(userEmail:string,input:Record<string,unknown>){

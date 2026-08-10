@@ -15,6 +15,7 @@ import {
   beginAgentRun,
   createAgentFallback,
   finishAgentRun,
+  recentAgentCorrections,
   recordToolCall,
 } from "../../../db/agent-platform";
 import { getIntegrationCredential } from "../../../db/open-source-integrations";
@@ -145,6 +146,21 @@ export type GroundedAgentRunResult =
 
 const AGENT_MODEL = "gpt-5.4-mini";
 
+/**
+ * Turns recent manager rejections of this agent's proposals into a short
+ * instructions addendum — the correction-signal learning loop. Each reason
+ * is exactly what a manager already typed into the existing Approve/Reject
+ * panel in Agent Studio; nothing here is invented or summarized by a model.
+ * Returns "" when there's no correction history yet, so an agent with no
+ * corrections behaves identically to before this existed.
+ */
+export async function correctionsInstructionAddendum(organizationId: string, propertyId: string, agentKey: string) {
+  const corrections = await recentAgentCorrections(organizationId, propertyId, agentKey);
+  if (!corrections.length) return "";
+  const lines = corrections.map(item => `- (${item.action_type}) ${item.correction_reason}`).join("\n");
+  return `\n\nRecent manager corrections for this role — weigh these, but do not apply one as a blanket rule if it clearly doesn't fit the current situation:\n${lines}`;
+}
+
 export async function runGroundedOperationsAgent(
   agentKey: string,
   config: GroundedAgentConfig,
@@ -162,6 +178,7 @@ export async function runGroundedOperationsAgent(
       "The model connection is not configured in this runtime. The request has been preserved for manual completion.");
     return { runId: run.id, status: "MANUAL_FALLBACK", fallback };
   }
+  const correctionsAddendum = await correctionsInstructionAddendum(run.context.organizationId, String(run.property.id), agentKey);
 
   const runtimeTools = config.tools.map(source => tool({
     name: source.name,
@@ -198,7 +215,7 @@ export async function runGroundedOperationsAgent(
     const agent = new Agent({
       name: config.agentName,
       model: AGENT_MODEL,
-      instructions: config.instructions,
+      instructions: config.instructions + correctionsAddendum,
       tools: [...runtimeTools, ...actionTools],
       outputType: groundedOperationsSchema,
     });

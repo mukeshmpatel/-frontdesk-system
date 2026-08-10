@@ -2,7 +2,7 @@ import { Agent, OpenAIProvider, Runner, tool } from "@openai/agents";
 import { z } from "zod";
 import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, proposeApprovalCase, recordToolCall } from "../../../db/agent-platform";
 import { getIntegrationCredential } from "../../../db/open-source-integrations";
-import { buildOutcomeRecord, type GroundedOperationsOutput } from "./agent-runtime";
+import { buildOutcomeRecord, correctionsInstructionAddendum, type GroundedOperationsOutput } from "./agent-runtime";
 
 const actionTakenSchema = z.object({
   tool: z.string(), summary: z.string(), referenceId: z.string().nullable(),
@@ -126,6 +126,7 @@ export async function runMaintenanceBriefing(userEmail: string, intent: string) 
   });
 
   try {
+    const correctionsAddendum = await correctionsInstructionAddendum(run.context.organizationId, String(run.property.id), "maintenance-dispatcher");
     const agent = new Agent({
       name: "AAIQ Maintenance Dispatcher",
       model: "gpt-5.4-mini",
@@ -137,7 +138,7 @@ change anything. When a specific work order or repair clearly needs to be dispat
 now and is not already assigned, call propose_maintenance_dispatch with a grounded reason and priority
 — this only creates a manager approval case, it never assigns a technician, reserves parts, or returns
 equipment to service on its own, and every such call must be listed in actionsTaken. Never approve
-work, order parts, or bypass safety rules yourself.`,
+work, order parts, or bypass safety rules yourself.` + correctionsAddendum,
       tools: [workTool, complianceTool, assetTool, proposeDispatchTool],
       outputType: briefingSchema,
     });
