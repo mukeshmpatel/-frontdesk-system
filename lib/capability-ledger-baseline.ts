@@ -4342,67 +4342,40 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/aaiq-website-factory/growth-command-center.tsx:9:643"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:108:78",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:108:78]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:131:78",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:131:78]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:108:78"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:131:78"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:115:27",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:115:27]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:138:27",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:138:27]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:115:27"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:138:27"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:117:13",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:117:13]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:140:13",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:140:13]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:117:13"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:140:13"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:128:9",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:128:9]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:151:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:151:9]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:128:9"
-  },
-  {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:133:9",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:133:9]",
-    "itemType": "button",
-    "owningModule": "AAIQ_WEBSITE_FACTORY",
-    "status": "working_incomplete",
-    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:133:9"
-  },
-  {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:147:15",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:147:15]",
-    "itemType": "button",
-    "owningModule": "AAIQ_WEBSITE_FACTORY",
-    "status": "working_incomplete",
-    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:147:15"
-  },
-  {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:149:187",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:149:187]",
-    "itemType": "button",
-    "owningModule": "AAIQ_WEBSITE_FACTORY",
-    "status": "working_incomplete",
-    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:149:187"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:151:9"
   },
   {
     "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:156:9",
@@ -4414,94 +4387,139 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:156:9"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:167:11",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:167:11]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:170:15",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:170:15]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:167:11"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:170:15"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:183:133",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:183:133]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:172:187",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:172:187]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:183:133"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:172:187"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:185:9",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:185:9]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:179:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:179:9]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:185:9"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:179:9"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:190:178",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:190:178]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:190:11",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:190:11]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:190:178"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:190:11"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:201:88",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:201:88]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:206:133",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:206:133]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:201:88"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:206:133"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:203:9",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:203:9]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:208:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:208:9]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:203:9"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:208:9"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:204:7",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:204:7]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:213:178",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:213:178]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:204:7"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:213:178"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:227:15",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:227:15]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:230:88",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:230:88]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:227:15"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:230:88"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:227:68",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:227:68]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:232:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:232:9]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:227:68"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:232:9"
   },
   {
-    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:228:9",
-    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:228:9]",
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:233:7",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:233:7]",
     "itemType": "button",
     "owningModule": "AAIQ_WEBSITE_FACTORY",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:228:9"
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:233:7"
+  },
+  {
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:256:15",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:256:15]",
+    "itemType": "button",
+    "owningModule": "AAIQ_WEBSITE_FACTORY",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:256:15"
+  },
+  {
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:256:68",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:256:68]",
+    "itemType": "button",
+    "owningModule": "AAIQ_WEBSITE_FACTORY",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:256:68"
+  },
+  {
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:257:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:257:9]",
+    "itemType": "button",
+    "owningModule": "AAIQ_WEBSITE_FACTORY",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:257:9"
+  },
+  {
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:283:7",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:283:7]",
+    "itemType": "button",
+    "owningModule": "AAIQ_WEBSITE_FACTORY",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:283:7"
+  },
+  {
+    "itemKey": "button:app/aaiq-website-factory/website-factory-client.tsx:296:9",
+    "itemName": "Unlabeled button [app/aaiq-website-factory/website-factory-client.tsx:296:9]",
+    "itemType": "button",
+    "owningModule": "AAIQ_WEBSITE_FACTORY",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/aaiq-website-factory/website-factory-client.tsx:296:9"
   },
   {
     "itemKey": "button:app/aaiq-workforce-lifecycle/workforce-lifecycle-client.tsx:3:604",

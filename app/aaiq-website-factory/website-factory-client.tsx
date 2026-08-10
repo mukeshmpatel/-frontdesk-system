@@ -70,6 +70,29 @@ export default function WebsiteFactoryClient() {
     setNotice(response.ok ? "Option chosen — the other drafts in this batch were archived. Open it to review and publish." : (result.error ?? "Could not choose this option."));
     if (response.ok) { setAiVariantGroupId(""); setAiMeta(null); await load(); }
   }
+  async function requestDomainConnection(projectId: string, domain: string, targetHostname: string) {
+    setBusy("REQUEST_DOMAIN_CONNECTION");
+    const response = await fetch("/api/v1/website-factory", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "REQUEST_DOMAIN_CONNECTION", projectId, domain, targetHostname }),
+    });
+    const result = await response.json() as any;
+    setBusy("");
+    setNotice(response.ok ? "DNS records generated — add them at your registrar, then click Verify." : (result.error ?? "Could not request domain connection."));
+    if (response.ok) await load();
+    return response.ok ? result : null;
+  }
+  async function verifyDomainConnection(connectionId: string) {
+    setBusy(`VERIFY:${connectionId}`);
+    const response = await fetch("/api/v1/website-factory", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "VERIFY_DOMAIN_CONNECTION", connectionId }),
+    });
+    const result = await response.json() as any;
+    setBusy("");
+    setNotice(result.status === "VERIFIED" ? "Domain verified and connected." : (result.error || "Not verified yet — DNS changes can take time to propagate."));
+    await load();
+  }
   async function makePlan(candidate: Row) {
     await action({ action: "CREATE_RECONCILIATION_PLAN", assetId: candidate.root.id, code: candidate.proposedCode, address: candidate.proposedAddress },
       "Reconciliation preview created. Review the scope, then approve the canonical property migration.");
@@ -188,13 +211,19 @@ export default function WebsiteFactoryClient() {
     </section>}
     {tab === "editor" && <section className="wf-editor">
       {!selected ? <div className="wf-empty"><b>Select a website from Portfolio.</b><p>The editor includes page structure, live preview, SEO readiness and approval controls.</p><button onClick={() => setTab("portfolio")}>Return to portfolio</button></div>
-        : <WebsiteEditor project={selected} busy={busy} save={save} close={() => { setSelected(null); setTab("portfolio"); }} />}
+        : <WebsiteEditor project={selected} busy={busy} save={save} close={() => { setSelected(null); setTab("portfolio"); }}
+            domainConnections={(data.domainConnections ?? []).filter((c: Row) => c.project_id === selected.id)}
+            requestConnection={requestDomainConnection} verifyConnection={verifyDomainConnection} domainBusy={busy} />}
     </section>}
     {tab === "growth" && <GrowthCommandCenter />}
   </main>;
 }
 
-function WebsiteEditor({ project, busy, save, close }: { project: Row; busy: string; save: (form: HTMLFormElement, action?: string) => Promise<void>; close: () => void }) {
+function WebsiteEditor({ project, busy, save, close, domainConnections, requestConnection, verifyConnection, domainBusy }: {
+  project: Row; busy: string; save: (form: HTMLFormElement, action?: string) => Promise<void>; close: () => void;
+  domainConnections: Row[]; requestConnection: (projectId: string, domain: string, targetHostname: string) => Promise<any>;
+  verifyConnection: (connectionId: string) => Promise<void>; domainBusy: string;
+}) {
   const content = project.content, seo = project.seo;
   const [builder, setBuilder] = useState({ html: String(content.builderHtml || ""), css: String(content.builderCss || ""), projectData: String(content.builderProjectData || "") });
   return <form onSubmit={event => { event.preventDefault(); void save(event.currentTarget); }}>
@@ -226,6 +255,46 @@ function WebsiteEditor({ project, busy, save, close }: { project: Row; busy: str
         <p>{project.missingFields.length ? project.missingFields.join(" · ") : "Required verified content is complete."}</p></section>
       <footer><button disabled={busy !== ""}>Save revision</button><button type="button" disabled={busy !== ""} onClick={event => event.currentTarget.form && void save(event.currentTarget.form, "REQUEST_APPROVAL")}>Request approval</button>
         <button type="button" disabled={busy !== "" || project.missingFields.length > 0} onClick={event => event.currentTarget.form && void save(event.currentTarget.form, "PUBLISH")}>Publish approved site</button></footer>
+      <DomainConnectionPanel projectId={project.id} connections={domainConnections} request={requestConnection} verify={verifyConnection} busy={domainBusy} />
     </aside>
   </form>;
+}
+
+/** Deliberately not a nested <form> — this renders inside WebsiteEditor's own
+ * enclosing <form>, and nested forms are invalid HTML. "Get DNS records" is
+ * a plain button with onClick instead of a submit handler. */
+function DomainConnectionPanel({ projectId, connections, request, verify, busy }: {
+  projectId: string; connections: Row[];
+  request: (projectId: string, domain: string, targetHostname: string) => Promise<any>;
+  verify: (connectionId: string) => Promise<void>; busy: string;
+}) {
+  const [domain, setDomain] = useState("");
+  const [targetHostname, setTargetHostname] = useState("");
+  async function getRecords() {
+    if (!domain.trim() || !targetHostname.trim()) return;
+    const result = await request(projectId, domain.trim(), targetHostname.trim());
+    if (result) { setDomain(""); setTargetHostname(""); }
+  }
+  return <section className="wf-domain-panel">
+    <p className="wf-kicker">CUSTOM DOMAIN</p>
+    <div className="wf-domain-form">
+      <input value={domain} onChange={e => setDomain(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void getRecords(); } }} placeholder="www.example.com" disabled={busy === "REQUEST_DOMAIN_CONNECTION"} />
+      <input value={targetHostname} onChange={e => setTargetHostname(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void getRecords(); } }} placeholder="your-worker.workers.dev" disabled={busy === "REQUEST_DOMAIN_CONNECTION"} />
+      <button type="button" disabled={busy === "REQUEST_DOMAIN_CONNECTION" || !domain.trim() || !targetHostname.trim()} onClick={() => void getRecords()}>
+        {busy === "REQUEST_DOMAIN_CONNECTION" ? "Generating…" : "Get DNS records"}
+      </button>
+    </div>
+    <p className="wf-domain-hint">Enter the public hostname your AAIQ Worker actually serves from (from your Cloudflare dashboard). AAIQ never modifies your DNS automatically — you add these records yourself, then verify.</p>
+    {connections.map(connection => <article className="wf-domain-connection" key={connection.id}>
+      <header><b>{connection.domain}</b><span className={`domain-status-${String(connection.status).toLowerCase()}`}>{String(connection.status).replaceAll("_", " ")}</span></header>
+      {connection.status !== "VERIFIED" && <>
+        <dl>
+          <div><dt>TXT record</dt><dd><code>{`_aaiq-verify.${connection.domain}`}</code> = <code>{connection.verification_token}</code></dd></div>
+          <div><dt>CNAME record</dt><dd><code>{connection.domain}</code> → <code>{connection.target_hostname}</code></dd></div>
+        </dl>
+        {connection.last_check_error && <p className="wf-domain-error">{connection.last_check_error}</p>}
+        <button type="button" disabled={busy === `VERIFY:${connection.id}`} onClick={() => void verify(connection.id)}>{busy === `VERIFY:${connection.id}` ? "Checking…" : "Verify"}</button>
+      </>}
+    </article>)}
+  </section>;
 }

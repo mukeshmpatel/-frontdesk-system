@@ -120,6 +120,10 @@ export async function websiteFactory(email: string, propertyContextId?: string) 
     : {results:[] as Record<string,any>[]};
   const reconciliations = context.role === "admin" && !properties.canonicalPropertyId
     ? await reconciliationCandidates(context.organizationId) : [];
+  const domainConnections = activeId
+    ? await db().prepare(`SELECT * FROM website_domain_connections WHERE organization_id=? AND property_id=? ORDER BY requested_at DESC`)
+      .bind(context.organizationId, activeId).all<Record<string, any>>()
+    : { results: [] as Record<string, any>[] };
   const normalizedProjects = projects.results.map(project => ({
     ...project,
     content: safeJson(project.content_json, {}),
@@ -138,6 +142,7 @@ export async function websiteFactory(email: string, propertyContextId?: string) 
     },
     projects: normalizedProjects,
     reconciliations,
+    domainConnections: domainConnections.results,
     templates: WEBSITE_TEMPLATES,
     metrics: {
       total: normalizedProjects.length,
@@ -480,4 +485,86 @@ export async function chooseWebsiteOption(email: string, projectId: string) {
         JSON.stringify({ variantGroupId: project.variant_group_id }), now),
   ]);
   return { id: projectId, status: project.status, previewUrl: `/site-preview/${project.slug}` };
+}
+
+function validHostname(value: string) {
+  const host = value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const isIpLiteral = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host) || host.includes(":");
+  if (!host || host === "localhost" || host.endsWith(".local") || isIpLiteral || !host.includes(".")) return null;
+  if (!/^[a-z0-9.-]+$/.test(host)) return null;
+  return host;
+}
+
+/**
+ * Guided domain connection, step 1: generates the exact DNS records an
+ * admin needs to add at their own registrar/DNS provider. This never
+ * touches any real external DNS zone — it only writes AAIQ's own record of
+ * what was requested and what to expect when verifying. target_hostname is
+ * supplied by the admin (their own AAIQ Worker's public hostname); AAIQ has
+ * no way to know that value on its own.
+ */
+export async function requestDomainConnection(email: string, input: { projectId: string; domain: string; targetHostname: string }) {
+  const context = await activeStaffContext(email); if (!context || context.role !== "admin") return null;
+  await ensure();
+  const project = await db().prepare(`SELECT id,property_context_id FROM website_factory_projects WHERE id=? AND organization_id=?`)
+    .bind(input.projectId, context.organizationId).first<{ id: string; property_context_id: string }>();
+  if (!project) throw new Error("Website project was not found.");
+  const domain = validHostname(input.domain);
+  if (!domain) throw new Error("Enter a real domain (e.g. www.example.com) — not an IP address or localhost.");
+  const targetHostname = validHostname(input.targetHostname);
+  if (!targetHostname) throw new Error("Enter the public hostname your AAIQ Worker actually serves from.");
+  const token = crypto.randomUUID().replace(/-/g, "");
+  const now = new Date().toISOString();
+  const id = crypto.randomUUID();
+  await db().prepare(`INSERT INTO website_domain_connections
+    (id,organization_id,property_id,project_id,domain,target_hostname,verification_token,status,requested_by,requested_at,verified_at,last_checked_at,last_check_error)
+    VALUES (?,?,?,?,?,?,?, 'AWAITING_DNS',?,?,NULL,NULL,NULL)
+    ON CONFLICT(organization_id,domain) DO UPDATE SET target_hostname=excluded.target_hostname,
+      verification_token=excluded.verification_token,status='AWAITING_DNS',requested_by=excluded.requested_by,
+      requested_at=excluded.requested_at,verified_at=NULL,last_checked_at=NULL,last_check_error=NULL`)
+    .bind(id, context.organizationId, project.property_context_id, project.id, domain, targetHostname, token, email, now).run();
+  const saved = await db().prepare(`SELECT * FROM website_domain_connections WHERE organization_id=? AND domain=?`)
+    .bind(context.organizationId, domain).first<Record<string, any>>();
+  return {
+    id: saved!.id, domain, status: saved!.status,
+    dnsRecords: [
+      { type: "TXT", name: `_aaiq-verify.${domain}`, value: saved!.verification_token, purpose: "Proves you control this domain before AAIQ marks it connected." },
+      { type: "CNAME", name: domain, value: targetHostname, purpose: "Points the domain at your AAIQ Worker." },
+    ],
+  };
+}
+
+/**
+ * Guided domain connection, step 2: a real DNS-over-HTTPS TXT lookup
+ * (Cloudflare's public resolver — no API key, no account needed) to check
+ * whether the verification record the admin was asked to add now resolves.
+ * Never assumes success; a lookup failure or mismatch leaves status
+ * unchanged and records the reason.
+ */
+export async function verifyDomainConnection(email: string, connectionId: string) {
+  const context = await activeStaffContext(email); if (!context || context.role !== "admin") return null;
+  const connection = await db().prepare(`SELECT * FROM website_domain_connections WHERE id=? AND organization_id=?`)
+    .bind(connectionId, context.organizationId).first<Record<string, any>>();
+  if (!connection) throw new Error("Domain connection was not found.");
+  const now = new Date().toISOString();
+  try {
+    const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(`_aaiq-verify.${connection.domain}`)}&type=TXT`,
+      { headers: { Accept: "application/dns-json" } });
+    if (!response.ok) throw new Error(`DNS lookup failed (${response.status}).`);
+    const data = await response.json() as { Answer?: Array<{ data?: string }> };
+    const found = (data.Answer ?? []).some(record => String(record.data || "").replace(/"/g, "").trim() === connection.verification_token);
+    if (found) {
+      await db().prepare(`UPDATE website_domain_connections SET status='VERIFIED',verified_at=?,last_checked_at=?,last_check_error=NULL WHERE id=?`)
+        .bind(now, now, connectionId).run();
+      return { id: connectionId, status: "VERIFIED" };
+    }
+    await db().prepare(`UPDATE website_domain_connections SET last_checked_at=?,last_check_error=? WHERE id=?`)
+      .bind(now, "Verification TXT record was not found yet. DNS changes can take time to propagate.", connectionId).run();
+    return { id: connectionId, status: "AWAITING_DNS", error: "Verification TXT record was not found yet. DNS changes can take time to propagate — try again shortly." };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "DNS verification failed.";
+    await db().prepare(`UPDATE website_domain_connections SET last_checked_at=?,last_check_error=? WHERE id=?`)
+      .bind(now, message, connectionId).run();
+    return { id: connectionId, status: connection.status, error: message };
+  }
 }

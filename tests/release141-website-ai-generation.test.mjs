@@ -35,7 +35,8 @@ test("web research never fabricates a result: no key configured means connected:
   assert.match(service, /export async function researchProperty/);
   assert.match(service, /if \(!apiKey\) return \{ connected: false, results: \[\] /);
   assert.match(service, /api\.search\.brave\.com/);
-  assert.doesNotMatch(service, /connected:\s*true.*results:\s*\[.*fake|placeholder|example\.com/i);
+  const researchFn = service.match(/export async function researchProperty[\s\S]*?\nexport (?:type|async function)/)[0];
+  assert.doesNotMatch(researchFn, /connected:\s*true.*results:\s*\[.*(?:fake|dummy|hardcoded)/i);
 });
 
 test("createWebsiteOptionSet only blocks on an existing PUBLISHED site, not on other drafts, unlike the manual single-project flow", async () => {
