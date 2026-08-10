@@ -274,49 +274,49 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:187:58"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:209:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:209:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:210:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:210:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:209:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:210:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:211:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:211:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:212:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:212:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:211:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:212:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:224:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:224:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:225:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:225:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:224:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:225:9"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:230:33",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:230:33]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:231:33",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:231:33]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:230:33"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:231:33"
   },
   {
-    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:234:9",
-    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:234:9]",
+    "itemKey": "button:app/aaiq-agent-studio/agent-studio-client.tsx:235:9",
+    "itemName": "Unlabeled button [app/aaiq-agent-studio/agent-studio-client.tsx:235:9]",
     "itemType": "button",
     "owningModule": "AAIQ_AGENT_STUDIO",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:234:9"
+    "sourcePath": "app/aaiq-agent-studio/agent-studio-client.tsx:235:9"
   },
   {
     "itemKey": "button:app/aaiq-agent-studio/digital-employee-command-center.tsx:23:5",
@@ -3766,6 +3766,24 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/components/aaiq-app-shell.tsx:72:388"
   },
   {
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:2985",
+    "itemName": "Move down [app/components/smart-quick-links.tsx:5:2985]",
+    "itemType": "button",
+    "owningModule": "AAIQ_SHARED_SHELL",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/components/smart-quick-links.tsx:5:2985"
+  },
+  {
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:2852",
+    "itemName": "Move up [app/components/smart-quick-links.tsx:5:2852]",
+    "itemType": "button",
+    "owningModule": "AAIQ_SHARED_SHELL",
+    "status": "working_incomplete",
+    "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
+    "sourcePath": "app/components/smart-quick-links.tsx:5:2852"
+  },
+  {
     "itemKey": "button:app/components/aaiq-app-shell.tsx:54:350",
     "itemName": "Unlabeled button [app/components/aaiq-app-shell.tsx:54:350]",
     "itemType": "button",
@@ -3811,22 +3829,22 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/components/aaiq-app-shell.tsx:72:572"
   },
   {
-    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:38:28",
-    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:38:28]",
+    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:40:28",
+    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:40:28]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/aaiq-daily-briefing.tsx:38:28"
+    "sourcePath": "app/components/aaiq-daily-briefing.tsx:40:28"
   },
   {
-    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:53:9",
-    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:53:9]",
+    "itemKey": "button:app/components/aaiq-daily-briefing.tsx:56:9",
+    "itemName": "Unlabeled button [app/components/aaiq-daily-briefing.tsx:56:9]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/aaiq-daily-briefing.tsx:53:9"
+    "sourcePath": "app/components/aaiq-daily-briefing.tsx:56:9"
   },
   {
     "itemKey": "button:app/components/report-drilldown-table.tsx:44:11",
@@ -3847,40 +3865,40 @@ export const CAPABILITY_LEDGER_BASELINE = [
     "sourcePath": "app/components/report-drilldown-table.tsx:52:312"
   },
   {
-    "itemKey": "button:app/components/smart-quick-links.tsx:5:2095",
-    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2095]",
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:2196",
+    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2196]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/smart-quick-links.tsx:5:2095"
+    "sourcePath": "app/components/smart-quick-links.tsx:5:2196"
   },
   {
-    "itemKey": "button:app/components/smart-quick-links.tsx:5:2208",
-    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2208]",
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:2309",
+    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2309]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/smart-quick-links.tsx:5:2208"
+    "sourcePath": "app/components/smart-quick-links.tsx:5:2309"
   },
   {
-    "itemKey": "button:app/components/smart-quick-links.tsx:5:2734",
-    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2734]",
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:3131",
+    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:3131]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/smart-quick-links.tsx:5:2734"
+    "sourcePath": "app/components/smart-quick-links.tsx:5:3131"
   },
   {
-    "itemKey": "button:app/components/smart-quick-links.tsx:5:2831",
-    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:2831]",
+    "itemKey": "button:app/components/smart-quick-links.tsx:5:3228",
+    "itemName": "Unlabeled button [app/components/smart-quick-links.tsx:5:3228]",
     "itemType": "button",
     "owningModule": "AAIQ_SHARED_SHELL",
     "status": "working_incomplete",
     "knownGapDescription": "A handler or form path exists, but no stored seven-question workflow evidence and human review prove the resulting business outcome.",
-    "sourcePath": "app/components/smart-quick-links.tsx:5:2831"
+    "sourcePath": "app/components/smart-quick-links.tsx:5:3228"
   },
   {
     "itemKey": "button:app/aaiq-tax-center/tax-center-client.tsx:106:250",
