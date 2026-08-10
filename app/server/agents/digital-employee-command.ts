@@ -11,8 +11,8 @@ import {
   seedAgents,
 } from "../../../db/agent-platform";
 import { activeStaffContext } from "../../../db/staff";
-import { runMaintenanceBriefing } from "./maintenance-briefing-agent";
-import { runGroundedOperationsAgent, type GroundedAgentRunResult, type GroundedOperationsOutput } from "./agent-runtime";
+import { runMaintenanceBriefing, normalizeMaintenanceBriefing } from "./maintenance-briefing-agent";
+import { runGroundedOperationsAgent, type GroundedAgentRunResult } from "./agent-runtime";
 import { DIGITAL_EMPLOYEE_REGISTRY } from "./digital-employee-registry";
 
 const CONSEQUENTIAL_TERMS = [
@@ -20,33 +20,13 @@ const CONSEQUENTIAL_TERMS = [
   "purchase", "order parts", "rate override", "issue key", "unlock", "call police", "shut down",
 ];
 
-/** The maintenance dispatcher keeps its own dedicated schema (priorities, compliance/parts
- * watch lists); normalize it into the shared shape so the chat surface can treat every
- * Digital Employee's answer the same way. */
-function normalizeMaintenanceBriefing(briefing: {
-  headline: string; executiveSummary: string; recommendedNextAction: string;
-  priorities: { title: string; reason: string; risk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; sourceIds: string[] }[];
-  complianceWatch: string[]; partsAndWarrantyWatch: string[]; missingInformation: string[]; confidence: number;
-}): GroundedOperationsOutput {
-  return {
-    headline: briefing.headline,
-    executiveSummary: briefing.executiveSummary,
-    recommendedNextAction: briefing.recommendedNextAction,
-    findings: briefing.priorities.map(item => ({ title: item.title, detail: item.reason, risk: item.risk, sourceIds: item.sourceIds })),
-    watchItems: [...briefing.complianceWatch, ...briefing.partsAndWarrantyWatch],
-    missingInformation: briefing.missingInformation,
-    actionsTaken: [],
-    confidence: briefing.confidence,
-  };
-}
-
 async function runAgentForKey(agentKey: string, userEmail: string, prompt: string): Promise<GroundedAgentRunResult | null> {
   if (agentKey === "maintenance-dispatcher") {
     const result = await runMaintenanceBriefing(userEmail, prompt);
     if (!result) return null;
     if (result.status === "MANUAL_FALLBACK") return { runId: result.runId, status: "MANUAL_FALLBACK", fallback: result.fallback };
     const status: "SUCCEEDED" | "NEEDS_REVIEW" = result.status === "NEEDS_REVIEW" ? "NEEDS_REVIEW" : "SUCCEEDED";
-    return { runId: result.runId, status, briefing: normalizeMaintenanceBriefing(result.briefing!) };
+    return { runId: result.runId, status, briefing: normalizeMaintenanceBriefing(result.briefing!), outcomeRecord: result.outcomeRecord! };
   }
   const config = DIGITAL_EMPLOYEE_REGISTRY[agentKey];
   if (!config) throw new Error("The selected Digital Employee is not configured yet.");
@@ -96,6 +76,7 @@ export async function runDigitalEmployeeCommand(userEmail: string, input: Record
 
   const isFallback = agentResult.status === "MANUAL_FALLBACK";
   const briefing = isFallback ? null : agentResult.briefing;
+  const outcomeRecord = isFallback ? null : agentResult.outcomeRecord;
   const responseText = isFallback
     ? "I could not reach the model connection for this request. It has been preserved for manual completion in the fallback queue."
     : briefing?.executiveSummary || `I reviewed the available ${property.name} records and could not produce a confident summary.`;
@@ -123,7 +104,7 @@ export async function runDigitalEmployeeCommand(userEmail: string, input: Record
 
   const outcome = approvalRequired ? "APPROVAL_REQUIRED" : "COMPLETED";
   const evidence = briefing
-    ? [{ source: "GROUNDED_AGENT_FINDINGS", findings: briefing.findings, watchItems: briefing.watchItems, missingInformation: briefing.missingInformation, actionsTaken: briefing.actionsTaken }]
+    ? [{ source: "GROUNDED_AGENT_FINDINGS", findings: briefing.findings, watchItems: briefing.watchItems, missingInformation: briefing.missingInformation, actionsTaken: briefing.actionsTaken, nextOwner: briefing.nextOwner, businessImpact: briefing.businessImpact }]
     : [{ source: "MANUAL_FALLBACK" }];
   await db.prepare(`INSERT INTO digital_employee_command_messages
     (id,session_id,organization_id,property_id,sender_type,input_mode,body,run_id,outcome_type,
@@ -140,8 +121,11 @@ export async function runDigitalEmployeeCommand(userEmail: string, input: Record
     approvalId,
     response: responseText,
     recommendedNextAction,
+    nextOwner: briefing?.nextOwner ?? null,
+    businessImpact: briefing?.businessImpact ?? null,
     confidence: briefing?.confidence ?? null,
     findings: briefing?.findings ?? [],
     actionsTaken: briefing?.actionsTaken ?? [],
+    outcomeRecord,
   };
 }

@@ -192,12 +192,13 @@ export default function AgentStudioClient() {
           <dl><div><dt>Status</dt><dd>{latest.status}</dd></div><div><dt>Confidence</dt><dd>{latest.confidence == null ? "Not available" : `${Math.round(latest.confidence * 100)}%`}</dd></div>
             <div><dt>Approval</dt><dd>{latest.approval_status}</dd></div><div><dt>Latency</dt><dd>{latest.latency_ms} ms</dd></div></dl>
           <h3>{output?.headline ?? "Run preserved"}</h3><p>{output?.executiveSummary ?? latest.error_message ?? latest.intent}</p>
-          {output?.recommendedNextAction && <div className="next-action"><small>ONE NEXT ACTION</small><strong>{output.recommendedNextAction}</strong></div>}
+          {output?.recommendedNextAction && <div className="next-action"><small>ONE NEXT ACTION</small><strong>{output.recommendedNextAction}</strong>{output?.nextOwner && <span className="next-owner">Owner: {output.nextOwner}</span>}</div>}
+          {output?.businessImpact && <p className="business-impact"><small>WHY THIS MATTERS</small>{output.businessImpact}</p>}
           {Array.isArray(output?.priorities) && <ol>{output.priorities.map((item:any, index:number) => <li key={index}><strong>{item.title}</strong><span>{item.reason}</span><small>Sources: {item.sourceIds.join(", ") || "Missing"}</small></li>)}</ol>}
           {Array.isArray(output?.findings) && <ol>{output.findings.map((item:any, index:number) => <li key={index}><strong>{item.title}</strong> <span className={`risk-${String(item.risk).toLowerCase()}`}>{item.risk}</span><span>{item.detail}</span><small>Sources: {item.sourceIds?.join(", ") || "Missing"}</small></li>)}</ol>}
           {Array.isArray(output?.watchItems) && output.watchItems.length > 0 && <div className="watch-items"><small>WATCH</small><ul>{output.watchItems.map((item:string, index:number) => <li key={index}>{item}</li>)}</ul></div>}
           {Array.isArray(output?.missingInformation) && output.missingInformation.length > 0 && <div className="missing-information"><small>MISSING INFORMATION</small><ul>{output.missingInformation.map((item:string, index:number) => <li key={index}>{item}</li>)}</ul></div>}
-          {Array.isArray(output?.actionsTaken) && output.actionsTaken.length > 0 && <div className="actions-taken"><small>DRAFTS CREATED — AWAITING YOUR APPROVAL</small><ul>{output.actionsTaken.map((item:any, index:number) => <li key={index}><strong>{item.tool}</strong> {item.summary}</li>)}</ul></div>}
+          {Array.isArray(output?.actionsTaken) && output.actionsTaken.length > 0 && <div className="actions-taken"><small>DRAFTS CREATED — AWAITING YOUR APPROVAL</small><ul>{output.actionsTaken.map((item:any, index:number) => <li key={index}><strong>{item.tool}</strong> {item.summary}{item.beforeState && item.afterState && <small className="before-after">{item.beforeState} → {item.afterState}</small>}</li>)}</ul></div>}
         </div> : <div className="empty-trace"><strong>No agent run yet</strong><span>Run the Maintenance Briefing Agent to create a source-linked trace.</span></div>}
       </aside>
     </section>

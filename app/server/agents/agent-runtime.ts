@@ -24,6 +24,13 @@ export const groundedOperationsSchema = z.object({
   headline: z.string(),
   executiveSummary: z.string(),
   recommendedNextAction: z.string(),
+  /** Who should act on recommendedNextAction next — a role or queue (e.g. "General
+   * Manager", "Front Desk Supervisor"), never a fabricated named individual. */
+  nextOwner: z.string(),
+  /** Plain-language statement of what is at stake if recommendedNextAction is not
+   * taken, grounded only in the findings/risk levels already cited below — never a
+   * fabricated dollar figure or metric the tools did not return. */
+  businessImpact: z.string(),
   findings: z.array(z.object({
     title: z.string(),
     detail: z.string(),
@@ -36,11 +43,71 @@ export const groundedOperationsSchema = z.object({
     tool: z.string(),
     summary: z.string(),
     referenceId: z.string().nullable(),
+    /** State immediately before/after this action, when the tool changed a record
+     * (e.g. a draft's prior status vs its new AWAITING_APPROVAL status). Null for
+     * read-only tools or when no prior state exists. */
+    beforeState: z.string().nullable(),
+    afterState: z.string().nullable(),
   })).default([]),
   confidence: z.number().min(0).max(1),
 });
 
 export type GroundedOperationsOutput = z.infer<typeof groundedOperationsSchema>;
+
+/**
+ * The blueprint's "Outcome Record" contract: every governed run's request,
+ * scope, decision, evidence, and next step in one canonical shape, assembled
+ * from the two places this data already lives — the LLM's structured output
+ * (groundedOperationsSchema) and the ai_agent_runs row created by
+ * beginAgentRun/finishAgentRun. Nothing here is invented by this function;
+ * it only relabels and combines fields that were already captured.
+ */
+export type OutcomeRecord = {
+  runId: string;
+  requestedBy: string;
+  intent: string;
+  organizationId: string;
+  propertyId: string;
+  propertyName: string;
+  sourcesConsulted: string[];
+  findings: GroundedOperationsOutput["findings"];
+  decision: string;
+  confidence: number;
+  actionStatus: "SUCCEEDED" | "NEEDS_REVIEW" | "MANUAL_FALLBACK";
+  actionsTaken: GroundedOperationsOutput["actionsTaken"];
+  businessImpact: string;
+  exceptions: { watchItems: string[]; missingInformation: string[] };
+  nextOwner: string;
+  nextAction: string;
+  correlationId: string;
+};
+
+export function buildOutcomeRecord(
+  run: { id: string; context: { organizationId: string; email: string }; property: Record<string, unknown> },
+  intent: string,
+  status: "SUCCEEDED" | "NEEDS_REVIEW" | "MANUAL_FALLBACK",
+  output: GroundedOperationsOutput,
+): OutcomeRecord {
+  return {
+    runId: run.id,
+    requestedBy: run.context.email,
+    intent,
+    organizationId: run.context.organizationId,
+    propertyId: String(run.property.id ?? ""),
+    propertyName: String(run.property.name ?? ""),
+    sourcesConsulted: [...new Set(output.findings.flatMap(item => item.sourceIds))],
+    findings: output.findings,
+    decision: output.recommendedNextAction,
+    confidence: output.confidence,
+    actionStatus: status,
+    actionsTaken: output.actionsTaken,
+    businessImpact: output.businessImpact,
+    exceptions: { watchItems: output.watchItems, missingInformation: output.missingInformation },
+    nextOwner: output.nextOwner,
+    nextAction: output.recommendedNextAction,
+    correlationId: run.id,
+  };
+}
 
 /** A read-only data source an agent may cite. Never mutates state. */
 export type GroundedTool = {
@@ -70,7 +137,7 @@ export type GroundedAgentConfig = {
 };
 
 export type GroundedAgentRunResult =
-  | { status: "SUCCEEDED" | "NEEDS_REVIEW"; runId: string; briefing: GroundedOperationsOutput }
+  | { status: "SUCCEEDED" | "NEEDS_REVIEW"; runId: string; briefing: GroundedOperationsOutput; outcomeRecord: OutcomeRecord }
   | { status: "MANUAL_FALLBACK"; runId: string; fallback: unknown };
 
 const AGENT_MODEL = "gpt-5.4-mini";
@@ -150,7 +217,7 @@ export async function runGroundedOperationsAgent(
       missing: output.missingInformation,
       approvalStatus: status === "NEEDS_REVIEW" ? "HUMAN_REVIEW_REQUIRED" : "NOT_REQUIRED",
     });
-    return { runId: run.id, status, briefing: output };
+    return { runId: run.id, status, briefing: output, outcomeRecord: buildOutcomeRecord(run, intent, status, output) };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Agent execution failed.";
     const fallback = await createAgentFallback(run, "FAILED", message);

@@ -6,6 +6,8 @@ type BriefingResult = {
   status: string;
   response: string;
   recommendedNextAction?: string;
+  nextOwner?: string | null;
+  businessImpact?: string | null;
   confidence: number | null;
   findings: Finding[];
 };
@@ -41,7 +43,8 @@ export default function AaiqDailyBriefing() {
     </header>
     {state === "done" && result && <div className="briefing-body">
       <p className="briefing-summary">{result.response}</p>
-      {result.recommendedNextAction && <div className="briefing-next-action"><small>ONE NEXT ACTION</small><strong>{result.recommendedNextAction}</strong></div>}
+      {result.recommendedNextAction && <div className="briefing-next-action"><small>ONE NEXT ACTION</small><strong>{result.recommendedNextAction}</strong>{result.nextOwner && <span className="briefing-owner">Owner: {result.nextOwner}</span>}</div>}
+      {result.businessImpact && <p className="briefing-impact"><small>WHY THIS MATTERS</small>{result.businessImpact}</p>}
       {result.findings.length > 0 && <ol className="briefing-findings">
         {result.findings.slice(0, 5).map((item, index) => <li key={index}>
           <span className={`risk-${item.risk.toLowerCase()}`}>{item.risk}</span>

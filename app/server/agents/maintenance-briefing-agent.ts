@@ -2,6 +2,7 @@ import { Agent, OpenAIProvider, Runner, tool } from "@openai/agents";
 import { z } from "zod";
 import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, recordToolCall } from "../../../db/agent-platform";
 import { getIntegrationCredential } from "../../../db/open-source-integrations";
+import { buildOutcomeRecord, type GroundedOperationsOutput } from "./agent-runtime";
 
 const briefingSchema = z.object({
   headline: z.string(),
@@ -16,6 +17,32 @@ const briefingSchema = z.object({
   missingInformation: z.array(z.string()),
   confidence: z.number().min(0).max(1),
 });
+
+/** The maintenance dispatcher keeps its own dedicated schema (priorities, compliance/parts
+ * watch lists); normalize it into the shared shape so it can be reported and audited the
+ * same way as every other Digital Employee's answer. */
+export function normalizeMaintenanceBriefing(briefing: {
+  headline: string; executiveSummary: string; recommendedNextAction: string;
+  priorities: { title: string; reason: string; risk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; sourceIds: string[] }[];
+  complianceWatch: string[]; partsAndWarrantyWatch: string[]; missingInformation: string[]; confidence: number;
+}): GroundedOperationsOutput {
+  const criticalCount = briefing.priorities.filter(item => item.risk === "CRITICAL").length;
+  const highCount = briefing.priorities.filter(item => item.risk === "HIGH").length;
+  return {
+    headline: briefing.headline,
+    executiveSummary: briefing.executiveSummary,
+    recommendedNextAction: briefing.recommendedNextAction,
+    nextOwner: "Maintenance Coordinator",
+    businessImpact: criticalCount || highCount
+      ? `${criticalCount} critical and ${highCount} high-risk maintenance item(s) may affect guest safety or service if not addressed.`
+      : "No critical or high-risk maintenance items are currently open.",
+    findings: briefing.priorities.map(item => ({ title: item.title, detail: item.reason, risk: item.risk, sourceIds: item.sourceIds })),
+    watchItems: [...briefing.complianceWatch, ...briefing.partsAndWarrantyWatch],
+    missingInformation: briefing.missingInformation,
+    actionsTaken: [],
+    confidence: briefing.confidence,
+  };
+}
 
 export async function runMaintenanceBriefing(userEmail: string, intent: string) {
   const run = await beginAgentRun(userEmail, "maintenance-dispatcher", intent);
@@ -101,7 +128,7 @@ never change records, approve work, order parts, return equipment to service, or
       output, missing: output.missingInformation,
       approvalStatus: status === "NEEDS_REVIEW" ? "HUMAN_REVIEW_REQUIRED" : "NOT_REQUIRED",
     });
-    return { runId: run.id, status, briefing: output };
+    return { runId: run.id, status, briefing: output, outcomeRecord: buildOutcomeRecord(run, intent, status, normalizeMaintenanceBriefing(output)) };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Agent execution failed.";
     const fallback = await createAgentFallback(run, "FAILED", message);
