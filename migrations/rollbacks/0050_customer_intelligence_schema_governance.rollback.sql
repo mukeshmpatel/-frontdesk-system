@@ -1,0 +1,11 @@
+DROP INDEX IF EXISTS cdp_geo_scope_idx;
+DROP INDEX IF EXISTS cdp_activation_scope_idx;
+DROP INDEX IF EXISTS cdp_tx_scope_idx;
+DROP INDEX IF EXISTS cdp_events_scope_idx;
+DROP TABLE IF EXISTS cdp_audit_events;
+DROP TABLE IF EXISTS cdp_geo_audiences;
+DROP TABLE IF EXISTS cdp_activation_requests;
+DROP TABLE IF EXISTS cdp_transactions;
+DROP TABLE IF EXISTS cdp_tracking_events;
+DROP TABLE IF EXISTS cdp_customer_profiles;
+DROP TABLE IF EXISTS cdp_source_registry;

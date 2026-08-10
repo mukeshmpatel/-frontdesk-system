@@ -1,0 +1,4 @@
+import { cookies } from "next/headers";
+import { issueUatRoleSession } from "../../../../../db/phase10-uat";
+function permitted(request:Request){const host=new URL(request.url).hostname;return host==="localhost"||host==="127.0.0.1"||host.endsWith(".local");}
+export async function GET(request:Request){if(!permitted(request))return Response.json({error:"UAT session exchange is unavailable in production."},{status:404});const session=await issueUatRoleSession(new URL(request.url).searchParams.get("role")||"FRONT_DESK");const jar=await cookies();jar.set("aaiq_uat_session",session.token,{httpOnly:true,sameSite:"strict",secure:false,path:"/",maxAge:3600});jar.set("aaiq_active_property","phase10-uat-property",{httpOnly:true,sameSite:"strict",secure:false,path:"/",maxAge:3600});return Response.redirect(new URL(`/aaiq-sample-lab?uat_role=${session.role}`,request.url),302);}

@@ -1,0 +1,20 @@
+.memory-search {
+  display: grid;
+  grid-template-columns: minmax(320px, .75fr) 1fr;
+  gap: 16px;
+  padding: 21px;
+  border: 1px solid #d5dfeb;
+  border-radius: 17px;
+  background: #fff;
+}
+.memory-search form, .memory-results { display: grid; gap: 10px; }
+.memory-search h2 { margin: 3px 0; }
+.memory-search form > div { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.memory-search input { padding: 11px; border: 1px solid #bfccd9; border-radius: 9px; font: inherit; }
+.memory-search button { min-height: 42px; border: 0; border-radius: 8px; background: #15365d; color: #fff; font-weight: 900; padding: 0 16px; }
+.memory-results > p { color: #53687f; }
+.memory-results article { display: grid; gap: 4px; padding: 10px; border-radius: 9px; background: #f3f6f9; }
+.memory-results small { color: #60748a; }
+@media (max-width: 750px) {
+  .memory-search, .memory-search form > div { grid-template-columns: 1fr; }
+}

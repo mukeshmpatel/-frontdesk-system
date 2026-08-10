@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aaiq-enterprise-pilot",
+  "main": "../dist/server/index.js",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "aaiq-enterprise-pilot-db",
+    "database_id": "__D1_DATABASE_ID__",
+    "migrations_dir": "pilot-migrations"
+  }],
+  "ai": { "binding": "AI" },
+  "vars": {
+    "CF_ACCESS_AUD": "__CF_ACCESS_AUD__",
+    "CF_ACCESS_TEAM_DOMAIN": "__CF_ACCESS_TEAM_DOMAIN__",
+    "AAIQ_PILOT_MEDIA_ENABLED": "false"
+  },
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "observability": { "enabled": true }
+}

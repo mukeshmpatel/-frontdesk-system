@@ -1,0 +1,11 @@
+DROP INDEX IF EXISTS sample_report_fact_scope_idx;
+DROP INDEX IF EXISTS sample_social_scope_idx;
+DROP INDEX IF EXISTS ai_agent_registry_scope_idx;
+DROP INDEX IF EXISTS sample_environment_audit_scope_idx;
+DROP INDEX IF EXISTS sample_environment_clone_scope_idx;
+DROP TABLE IF EXISTS sample_report_facts;
+DROP TABLE IF EXISTS sample_social_accounts;
+DROP TABLE IF EXISTS ai_agent_registry;
+DROP TABLE IF EXISTS sample_environment_audit;
+DROP TABLE IF EXISTS sample_environment_clones;
+DROP TABLE IF EXISTS sample_environment_templates;

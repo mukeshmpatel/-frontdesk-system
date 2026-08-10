@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { authorizeUatRole, agentStudioActionClass, UAT_ROLES } from "../lib/uat-authorization.mjs";
+import { readFile } from "node:fs/promises";
+const root=new URL("../",import.meta.url);const read=p=>readFile(new URL(p,root),"utf8");
+
+test("all five UAT roles have explicit non-inherited permission boundaries",()=>{assert.deepEqual(UAT_ROLES,["FRONT_DESK","SUPERVISOR","GM","ADMINISTRATOR","AUDITOR"]);for(const role of UAT_ROLES)assert.equal(authorizeUatRole(role,"reports","READ").allowed,true);assert.equal(authorizeUatRole("FRONT_DESK","reports","EXPORT").allowed,false);assert.equal(authorizeUatRole("AUDITOR","agent_studio","RUN_TASK").allowed,false);assert.equal(authorizeUatRole("ADMINISTRATOR","agent_studio","CONFIGURE").allowed,true);});
+test("sensitive Agent Studio commands map to explicit permission verbs",()=>{assert.equal(agentStudioActionClass("UPDATE_POLICY"),"CONFIGURE");assert.equal(agentStudioActionClass("EVALUATE_ROLE_PARITY"),"EVALUATE");assert.equal(agentStudioActionClass("DECIDE_APPROVAL"),"DECIDE_APPROVAL");assert.equal(agentStudioActionClass("anything-else"),"UNKNOWN");});
+test("unknown roles and actions fail closed while production identity policy remains unchanged",()=>{assert.equal(authorizeUatRole("INTRUDER","reports","READ").allowed,false);assert.equal(authorizeUatRole("FRONT_DESK","agent_studio","UNKNOWN").allowed,false);assert.equal(authorizeUatRole(undefined,"agent_studio","CONFIGURE").reason,"PRODUCTION_IDENTITY_POLICY");});
+test("UAT route decisions are persisted as scoped allow and deny evidence",async()=>{const [migration,service,agent,samples,exports]=await Promise.all([read("migrations/0033_uat_access_evidence.sql"),read("db/phase10-uat.ts"),read("app/api/v1/agent-studio/route.ts"),read("app/api/v1/sample-environments/route.ts"),read("app/api/v1/reports/exports/route.ts")]);assert.match(migration,/CHECK\(decision IN\('ALLOW','DENY'\)\)/);assert.match(service,/recordUatAccessEvidence/);for(const route of [agent,samples,exports])assert.match(route,/authorizeUatRole/);});

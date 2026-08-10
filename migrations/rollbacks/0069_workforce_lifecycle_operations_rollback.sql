@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS workforce_offboarding_tasks; DROP TABLE IF EXISTS workforce_job_publication_drafts; DROP TABLE IF EXISTS workforce_publishing_targets; DROP TABLE IF EXISTS workforce_employee_actions; DROP TABLE IF EXISTS workforce_role_templates;

@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS uat_access_evidence(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,property_id TEXT NOT NULL,user_email TEXT NOT NULL,role_key TEXT NOT NULL,capability TEXT NOT NULL,action TEXT NOT NULL,decision TEXT NOT NULL CHECK(decision IN('ALLOW','DENY')),reason TEXT NOT NULL,requested_property_id TEXT,occurred_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS uat_access_evidence_scope_idx ON uat_access_evidence(organization_id,property_id,role_key,decision,occurred_at);

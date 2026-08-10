@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS energy_savings_evidence; DROP TABLE IF EXISTS guest_tv_message_drafts; DROP TABLE IF EXISTS room_energy_action_proposals; DROP TABLE IF EXISTS room_energy_policies; DROP TABLE IF EXISTS room_automation_devices;

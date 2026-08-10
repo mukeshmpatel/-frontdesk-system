@@ -1,0 +1,128 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { DrilldownRecord, SummaryMetric } from "../components/report-drilldown-table";
+
+type GroupRow={dimension:string;factType:string;value:number;unit:string;recordCount:number};
+type SourceGroup={name:string;count:number;latestAt:string;processed:number;items:Array<{id:string;sender:string;subject:string;receivedAt:string}>};
+type PropertyInfo={id:string;code:string;name:string;address:string};
+type Coverage={state:"AVAILABLE"|"PARTIAL"|"CONNECTION_REQUIRED";sources:string[];missing:string[];message:string};
+type SavedView={id:string;name:string;reportId:string;filtersJson:string;updatedAt:string};
+type TaskRow={id:string;title:string;description:string;moduleOrigin:string;department:string;assignedTo:string|null;dueDate:string|null;createdAt:string;room:string|null;priority:string;status:string;progress:number;linkedEntity:{type:string;id:string;route:string}};
+type TaskSnapshot={property:{id:string;code:string;name:string};totalCount:number;rows:TaskRow[]};
+type LibraryItem={label:string;area:string;metric?:string;level?:string;route?:string};
+type LibrarySection={group:string;items:LibraryItem[];pending?:boolean};
+const areas=[
+  {value:"all",label:"All departments",department:""},{value:"front_desk",label:"Front Desk & Guest Services",department:"FRONT_DESK"},
+  {value:"housekeeping",label:"Housekeeping & Laundry",department:"HOUSEKEEPING"},{value:"maintenance",label:"Maintenance & Engineering",department:"MAINTENANCE"},
+  {value:"restaurant",label:"Restaurant & Bar",department:"RESTAURANT"},{value:"banquets",label:"Banquets & Events",department:"BANQUETS"},
+  {value:"sales",label:"Sales & Revenue",department:"SALES"},{value:"inventory",label:"Inventory & Procurement",department:"INVENTORY"},
+  {value:"workforce",label:"Workforce & HR",department:"WORKFORCE"},{value:"finance",label:"Finance & Accounting",department:"FINANCE"},
+  {value:"security",label:"Security & Incidents",department:"SECURITY"},{value:"technology",label:"IT & Technology",department:"TECHNOLOGY"},
+  {value:"compliance",label:"Compliance & Brand Standards",department:"COMPLIANCE"},
+];
+const levels=[
+  {value:"enterprise",label:"Enterprise roll-up",groupBy:"department"},{value:"property",label:"Property",groupBy:"department"},
+  {value:"department",label:"Department",groupBy:"department"},{value:"employee",label:"Employee",groupBy:"employee"},
+  {value:"room",label:"Room / location",groupBy:"room"},{value:"metric",label:"Metric / source type",groupBy:"fact_type"},
+];
+const library:LibrarySection[]=[
+  {group:"Rooms & Front Desk",items:[{label:"Daily operations summary",area:"all"},{label:"Guest requests by status",area:"front_desk",metric:"guest-requests"},{label:"Incident and recovery log",area:"front_desk",metric:"incidents"},{label:"Room exception activity",area:"front_desk"},{label:"Cash and check custody reconciliation",area:"front_desk",route:"/aaiq-cash-custody"}]},
+  {group:"Housekeeping",items:[{label:"Room-turn assignments",area:"housekeeping"},{label:"Cleaning workload by employee",area:"housekeeping",level:"employee"},{label:"Room status exceptions",area:"housekeeping",level:"room"},{label:"Evidence and inspection audit",area:"housekeeping",metric:"evidence-files"}]},
+  {group:"Maintenance & Compliance",items:[{label:"Open work-order aging",area:"maintenance",metric:"open-maintenance"},{label:"Maintenance completion",area:"maintenance"},{label:"PMI compliance by work order",area:"compliance"},{label:"Critical and repeat repair review",area:"maintenance",metric:"critical-work"}]},
+  {group:"Workforce",items:[{label:"Labor utilization",area:"workforce",metric:"labor-hours"},{label:"Time and attendance detail",area:"workforce",level:"employee"},{label:"Department workload",area:"all",level:"department"}]},
+  {group:"Revenue & Folio",items:[{label:"Daily revenue and occupancy",area:"finance"},{label:"Department revenue",area:"finance"},{label:"Folio and line-item audit",area:"finance"},{label:"Tax and settlement reconciliation",area:"finance"}],pending:true},
+];
+function isoDay(offset=0){const date=new Date(Date.now()+offset*86_400_000);return date.toISOString().slice(0,10)}
+function exclusiveEnd(day:string){const date=new Date(`${day}T00:00:00.000Z`);date.setUTCDate(date.getUTCDate()+1);return date.toISOString()}
+function pretty(value:string){return value.replace(/-/g," ").replace(/\b\w/g,letter=>letter.toUpperCase())}
+
+export default function PmsReportingCenter(){
+  const [from,setFrom]=useState(isoDay(-30)),[to,setTo]=useState(isoDay());
+  const [area,setArea]=useState("all"),[level,setLevel]=useState("enterprise"),[groupBy,setGroupBy]=useState("department");
+  const [metrics,setMetrics]=useState<SummaryMetric[]>([]),[groups,setGroups]=useState<GroupRow[]>([]);
+  const [selected,setSelected]=useState<SummaryMetric|null>(null),[records,setRecords]=useState<DrilldownRecord[]>([]);
+  const [source,setSource]=useState<DrilldownRecord|null>(null),[busy,setBusy]=useState(true),[notice,setNotice]=useState("");
+  const [compare,setCompare]=useState(true),[search,setSearch]=useState("");
+  const [perspective,setPerspective]=useState<"operations"|"separate"|"summary">("operations"),[sourceGroups,setSourceGroups]=useState<SourceGroup[]>([]),[sourceSummary,setSourceSummary]=useState("");
+  const [taskSnapshot,setTaskSnapshot]=useState<TaskSnapshot|null>(null),[taskView,setTaskView]=useState<"open"|"urgent"|null>(null);
+  const [property,setProperty]=useState<PropertyInfo|null>(null),[coverage,setCoverage]=useState<Coverage|null>(null),[receipt,setReceipt]=useState("");
+  const [savedViews,setSavedViews]=useState<SavedView[]>([]),[viewName,setViewName]=useState("");
+  const load=useCallback(async(explicit=false)=>{
+    setBusy(true);setNotice("");
+    const start=`${from}T00:00:00.000Z`,end=exclusiveEnd(to);
+    try{
+      const selectedArea=areas.find(item=>item.value===area)??areas[0],department=selectedArea.department;
+      const reportId=area==="workforce"?"workforce":"property";
+      const summaryUrl=`/api/v1/reports/summary?from=${encodeURIComponent(start)}&to=${encodeURIComponent(end)}&area=${area}${department?`&department=${encodeURIComponent(department)}`:""}${property?`&property=${encodeURIComponent(property.id)}`:""}&compare=${compare?"prior":"none"}`;
+      const [summaryResponse,groupResponse,taskResponse]=await Promise.all([
+        explicit?fetch("/api/v1/reports/runs",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({from:start,to:end,area,department:department||undefined,property:property?.id,compare})}):fetch(summaryUrl,{cache:"no-store"}),
+        fetch(`/api/v1/reports/${reportId}?from=${encodeURIComponent(start)}&to=${encodeURIComponent(end)}&group_by=${groupBy}${department?`&department=${encodeURIComponent(department)}`:""}${property?`&property=${encodeURIComponent(property.id)}`:""}${compare?"&compare=prior":""}`,{cache:"no-store"}),
+        fetch(`/api/v1/reports/tasks${property?`?property=${encodeURIComponent(property.id)}`:""}`,{cache:"no-store"}),
+      ]);
+      const summary=await summaryResponse.json() as {metrics?:SummaryMetric[];property?:PropertyInfo;coverage?:Coverage;receipt?:{checksum?:string};error?:string};
+      const grouped=await groupResponse.json() as {rows?:GroupRow[];coverage?:Coverage;error?:string};
+      const tasks=await taskResponse.json() as TaskSnapshot&{error?:string};
+      if(!summaryResponse.ok||!groupResponse.ok||!taskResponse.ok)throw new Error(summary.error??grouped.error??tasks.error??"Report could not be compiled.");
+      setMetrics(summary.metrics??[]);setGroups(grouped.rows??[]);setTaskSnapshot(tasks);setProperty(summary.property??null);setCoverage(summary.coverage??grouped.coverage??null);
+      setReceipt(summary.receipt?.checksum??"");setSelected(null);setRecords([]);setSource(null);
+    }catch(error){setNotice(error instanceof Error?error.message:"Report could not be compiled.")}finally{setBusy(false)}
+  },[from,to,area,groupBy,compare,property?.id]);
+  useEffect(()=>{const selectedLevel=levels.find(item=>item.value===level);if(selectedLevel)setGroupBy(selectedLevel.groupBy)},[level]);
+  useEffect(()=>{if(!source)return;const close=(event:KeyboardEvent)=>{if(event.key==="Escape")setSource(null)};document.addEventListener("keydown",close);const previous=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{document.removeEventListener("keydown",close);document.body.style.overflow=previous}},[source]);
+  useEffect(()=>{void load()},[load]);
+  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get("tasks");if(requested==="open"||requested==="urgent")openTasks(requested)},[]);
+  useEffect(()=>{if(perspective==="operations")return;const run=async()=>{const response=await fetch(`/api/v1/reports/sources?from=${from}T00:00:00Z&to=${exclusiveEnd(to)}&mode=${perspective}${property?`&property=${encodeURIComponent(property.id)}`:""}`,{cache:"no-store"});const data=await response.json() as {sources?:SourceGroup[];summary?:string;coverage?:Coverage};setSourceGroups(data.sources??[]);setSourceSummary(data.summary??data.coverage?.message??"")};void run()},[perspective,from,to,property]);
+  useEffect(()=>{let cursor="",stopped=false;const tick=async()=>{if(!property)return;try{const response=await fetch(`/api/v1/reports/events?after=${encodeURIComponent(cursor)}&property=${encodeURIComponent(property.id)}`,{cache:"no-store"});const data=await response.json() as {cursor?:string;events?:unknown[]};cursor=data.cursor??cursor;if(!stopped&&data.events?.length)void load()}catch{}};const timer=setInterval(()=>void tick(),10000);return()=>{stopped=true;clearInterval(timer)}},[load,property]);
+  useEffect(()=>{if(!property)return;void fetch(`/api/v1/reports/views?property=${encodeURIComponent(property.id)}`,{cache:"no-store"}).then(async response=>(await response.json()) as {views?:SavedView[]}).then(data=>setSavedViews(data.views??[])).catch(()=>undefined)},[property]);
+  async function drill(metric:SummaryMetric,dimension?:string){
+    setSelected(metric);setSource(null);setBusy(true);
+    try{const params=new URLSearchParams({metric:metric.id,from:metric.drillDown.from,to:metric.drillDown.to,property:metric.drillDown.propertyId});
+      if(metric.drillDown.department)params.set("department",metric.drillDown.department);if(dimension){params.set("group_by",groupBy);params.set("dimension",dimension)}
+      const response=await fetch(`/api/v1/reports/drilldown?${params}`,{cache:"no-store"});const data=await response.json() as {records?:DrilldownRecord[];error?:string};if(!response.ok)throw new Error(data.error);
+      setRecords(data.records??[])}catch(error){setNotice(error instanceof Error?error.message:"Drill-down failed.")}finally{setBusy(false)}
+  }
+  function openTasks(view:"open"|"urgent"){
+    setTaskView(view);
+    void fetch("/api/v1/reports/tasks",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({priority:view==="urgent"?"CRITICAL":undefined,property:property?.id})}).catch(()=>undefined);
+  }
+  async function exportCsv(){
+    const rows=records.length?records:groups as unknown as DrilldownRecord[];if(!rows.length)return;setBusy(true);
+    try{const response=await fetch("/api/v1/reports/exports",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({reportId:area==="workforce"?"workforce":"property",format:"csv",groupBy,drill:selected?.id,filters:{from:`${from}T00:00:00.000Z`,to:exclusiveEnd(to),property:property?.id,department:(areas.find(item=>item.value===area)??areas[0]).department||undefined}})});if(!response.ok){const error=await response.json() as{error?:string};throw new Error(error.error??"Export failed.")};const blob=await response.blob(),disposition=response.headers.get("content-disposition")??"",name=disposition.match(/filename="([^"]+)"/)?.[1]??`AAIQ-${area}-${from}-${to}.csv`;const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=name;link.click();URL.revokeObjectURL(link.href);setNotice(`Exported ${response.headers.get("x-aaiq-row-count")??rows.length} server-verified rows.`)}catch(error){setNotice(error instanceof Error?error.message:"Export failed.")}finally{setBusy(false)}
+  }
+  async function saveView(){if(!viewName.trim()||!property)return;const response=await fetch("/api/v1/reports/views",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name:viewName.trim(),reportId:area==="workforce"?"workforce":"property",filters:{from,to,area,level,groupBy,compare,property:property.id}})});const data=await response.json() as{error?:string};if(!response.ok){setNotice(data.error??"View could not be saved.");return}setViewName("");setNotice("Saved for this property only.");const refreshed=await fetch(`/api/v1/reports/views?property=${encodeURIComponent(property.id)}`).then(item=>item.json()) as{views?:SavedView[]};setSavedViews(refreshed.views??[])}
+  function applyView(view:SavedView){try{const filters=JSON.parse(view.filtersJson) as Record<string,unknown>;if(typeof filters.from==="string")setFrom(filters.from);if(typeof filters.to==="string")setTo(filters.to);if(typeof filters.area==="string")setArea(filters.area);if(typeof filters.level==="string")setLevel(filters.level);if(typeof filters.compare==="boolean")setCompare(filters.compare);setNotice(`Loaded “${view.name}” for ${property?.name}.`)}catch{setNotice("This saved view contains invalid filters.")}}
+  const max=Math.max(1,...groups.map(row=>Number(row.value)));
+  const filteredLibrary=library.map(section=>({...section,items:section.items.filter(item=>item.label.toLowerCase().includes(search.toLowerCase()))})).filter(section=>section.items.length);
+  return <main className="pms-reporting">
+    <header className="pms-report-header"><div><a href="/">← AAIQ Home</a><p>{property?`${property.code} · ${property.name}`:"Authorized property"} · Enterprise intelligence</p><h1>AAIQ Enterprise Reporting Center</h1><span>Source-backed totals, exact drill-down rows, owning workflows, and governed exports.</span></div><div className="report-health"><i/><strong>Property-scoped refresh</strong><span>Checks audited events every 10 seconds</span></div></header>
+    {notice&&<div className="report-alert">{notice}</div>}
+    <section className="report-scope-path"><div><small>ACTIVE REPORTING PATH</small><strong>Enterprise</strong><i>›</i><strong>{property?.name??taskSnapshot?.property.name??"Active property"}</strong><i>›</i><strong>{areas.find(item=>item.value===area)?.label}</strong><i>›</i><strong>{levels.find(item=>item.value===level)?.label}</strong></div><span>Every available total opens the exact canonical rows counted.</span></section>
+    <section className="task-integrity-strip" aria-label="Live task reporting"><button className={taskView==="open"?"active":""} onClick={()=>openTasks("open")}><small>LIVE PROPERTY WORK QUEUE</small><strong>{taskSnapshot?.totalCount??0}</strong><span>Open tasks</span><em>View every underlying task →</em></button><button className={taskView==="urgent"?"active urgent":"urgent"} onClick={()=>openTasks("urgent")}><small>IMMEDIATE ATTENTION</small><strong>{taskSnapshot?.rows.filter(row=>row.priority==="CRITICAL").length??0}</strong><span>Urgent tasks</span><em>Open the exact urgent records →</em></button><div><b>Badge integrity protected</b><span>Both numbers come from one property- and role-scoped work-order query. AAIQ never displays a task count without its matching rows.</span></div></section>
+    {taskView&&<section className="transaction-explorer task-drilldown"><header><div><p>Universal drill-down · Live queue</p><h2>{taskView==="urgent"?"Urgent Tasks":"All Open Tasks"}</h2><span>{(taskView==="urgent"?taskSnapshot?.rows.filter(row=>row.priority==="CRITICAL"):taskSnapshot?.rows)?.length??0} exact records</span></div><div className="transaction-actions"><button className="secondary" onClick={()=>setTaskView(null)}>Close detail</button></div></header><div className="transaction-table"><table><thead><tr><th>Priority</th><th>Task</th><th>Department</th><th>Room</th><th>Owner</th><th>Due</th><th>Progress</th><th>Workflow</th></tr></thead><tbody>{(taskView==="urgent"?taskSnapshot?.rows.filter(row=>row.priority==="CRITICAL"):taskSnapshot?.rows)?.map(row=><tr key={row.id}><td><span className={`priority-${row.priority.toLowerCase()}`}>{row.priority}</span></td><td><strong>{row.title}</strong><small>{row.moduleOrigin.replaceAll("_"," ")}</small></td><td>{row.department.replaceAll("_"," ")}</td><td>{row.room||"—"}</td><td>{row.assignedTo||"Unassigned"}</td><td>{row.dueDate?new Date(row.dueDate).toLocaleString():"Not set"}</td><td>{row.progress}% · {row.status}</td><td><a href={row.linkedEntity.route}>Open task →</a></td></tr>)}</tbody></table></div>{!(taskView==="urgent"?taskSnapshot?.rows.filter(row=>row.priority==="CRITICAL"):taskSnapshot?.rows)?.length&&<div className="report-empty">No matching open tasks. The badge and row count both correctly equal zero.</div>}</section>}
+    <section className="report-filter-bar">
+      <label>Perspective<select value={perspective} onChange={event=>setPerspective(event.target.value as typeof perspective)}><option value="operations">Operational</option><option value="separate">Separate sources</option><option value="summary">Summary only</option></select></label>
+      <label>Department<select value={area} onChange={event=>setArea(event.target.value)}>{areas.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+      <label>Drill-down level<select value={level} onChange={event=>setLevel(event.target.value)}>{levels.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+      <label>From<input type="date" value={from} onChange={event=>setFrom(event.target.value)}/></label>
+      <label>Through<input type="date" value={to} min={from} onChange={event=>setTo(event.target.value)}/></label>
+      <label className="compare-toggle"><input type="checkbox" checked={compare} onChange={event=>setCompare(event.target.checked)}/>Compare with prior period</label>
+      <button onClick={()=>void load(true)} disabled={busy}>{busy?"Compiling…":"Run & audit report"}</button>
+    </section>
+    {coverage&&<section className={`report-coverage coverage-${coverage.state.toLowerCase()}`}><div><strong>{coverage.state.replaceAll("_"," ")}</strong><span>{coverage.message}</span></div><small>{coverage.sources.length?`Sources: ${coverage.sources.join(", ")}`:`Missing: ${coverage.missing.join(", ")}`}</small>{coverage.missing.length>0&&<a href="/aaiq-governed-integrations">Configure missing sources →</a>}</section>}
+    <section className="saved-report-tools"><div><strong>Property-saved views</strong><span>Views are isolated to {property?.name??"the active property"}.</span></div><select value="" onChange={event=>{const view=savedViews.find(item=>item.id===event.target.value);if(view)applyView(view)}}><option value="">Load a saved view…</option>{savedViews.map(view=><option key={view.id} value={view.id}>{view.name}</option>)}</select><input value={viewName} onChange={event=>setViewName(event.target.value)} placeholder="Name this view"/><button onClick={()=>void saveView()} disabled={!viewName.trim()||!property}>Save view</button>{receipt&&<small>Audited run receipt · {receipt.slice(0,12)}</small>}</section>
+    {perspective==="operations"?<><section className="report-kpi-grid">{metrics.map(metric=><button key={metric.id} className={selected?.id===metric.id?"active":""} onClick={()=>void drill(metric)}><span>{metric.label}</span><strong>{metric.value.toLocaleString()} <small>{metric.unit}</small></strong><b className={`trend-${metric.trend.toLowerCase()}`}>{compare?`${metric.trend} · prior ${metric.priorValue?.toLocaleString()??"—"}${metric.changePercent===null?"":` · ${metric.changePercent}%`}`:"Current period"}</b><em>Open {metric.recordCount} exact source record{metric.recordCount===1?"":"s"} →</em></button>)}</section>
+    <section className="report-analysis-grid">
+      <article className="report-chart-panel"><header><div><p>Performance distribution</p><h2>{areas.find(item=>item.value===area)?.label} by {pretty(groupBy)}</h2></div><span>{groups.reduce((sum,row)=>sum+Number(row.recordCount),0)} source records</span></header>
+        <div className="report-bars">{groups.length?groups.slice(0,12).map(row=><button key={`${row.dimension}-${row.factType}`} onClick={()=>{const metric:SummaryMetric={id:row.factType,label:`${pretty(row.dimension||"Unassigned")} · ${pretty(row.factType)}`,value:Number(row.value),unit:row.unit,recordCount:row.recordCount,priorValue:null,change:null,changePercent:null,trend:"FLAT",drillDown:{metricId:row.factType,propertyId:property?.id??"",from:`${from}T00:00:00.000Z`,to:exclusiveEnd(to),department:(areas.find(item=>item.value===area)?.department||null)}};void drill(metric,row.dimension)}}><div><strong>{pretty(row.dimension||"Unassigned")}</strong><span>{pretty(row.factType)}</span></div><i><b style={{width:`${Math.max(3,Number(row.value)/max*100)}%`}}/></i><em>{Number(row.value).toLocaleString()} {row.unit} · {row.recordCount} rows →</em></button>):<div className="report-empty">No source-backed activity matched this range. This is an empty result, not an estimated zero.</div>}</div>
+      </article>
+      <article className="report-catalog"><header><p>PMS report library</p><h2>Operational report catalog</h2><input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Find a report…"/></header>
+        <div>{filteredLibrary.map(section=><section key={section.group}><h3>{section.group}{section.pending&&<span>Integration required</span>}</h3>{section.items.map(item=><button key={item.label} disabled={section.pending} onClick={()=>{if(item.route){window.location.assign(item.route);return}setArea(item.area);if(item.level)setLevel(item.level);setNotice(`Opening ${item.label} with the active property and date filters.`)}}><span>{item.label}</span><b>{section.pending?"Connect PMS/finance source":item.route?"Open governed workflow →":"Run report →"}</b></button>)}</section>)}</div>
+      </article>
+    </section>
+    {selected&&<section className="transaction-explorer"><header><div><p>Level 2 · Transaction detail</p><h2>{selected.label}</h2><span>{records.length} records for {from} through {to}</span></div><div className="transaction-actions"><button onClick={()=>void exportCsv()} disabled={!records.length}>Export audited CSV</button><button className="secondary" onClick={()=>{setSelected(null);setRecords([]);setSource(null)}}>Close detail</button></div></header>
+      {records.length?<div className="transaction-table"><table><thead><tr><th>When</th><th>Canonical source</th><th>Room</th><th>Owner</th><th>Status</th><th>Detail</th></tr></thead><tbody>{records.map((record,index)=><tr key={String(record.id??index)}><td>{String(record.occurredAt??"—")}</td><td><strong>{String(record.title??record.id??"Source record")}</strong><small>{String(record.sourceLabel??record.priority??"")}</small></td><td>{String(record.room??"—")}</td><td>{String(record.employee??"—")}</td><td><span>{String(record.status??"Recorded")}</span></td><td><button onClick={()=>setSource(record)}>Inspect source →</button></td></tr>)}</tbody></table></div>:<div className="report-empty">This metric has no canonical source records in the selected period.</div>}
+    </section>}</>:<section className="source-report-center"><header><div><p>Source-separated reporting</p><h2>{perspective==="summary"?"Connected sources summary":"A separate report for every email, phone, and connected account"}</h2></div><span>{sourceGroups.reduce((sum,item)=>sum+item.count,0)} records</span></header>{sourceSummary&&<div className="source-summary-answer">{sourceSummary}</div>}<div className="source-report-grid">{sourceGroups.map(group=><article key={group.name}><header><div><strong>{group.name}</strong><span>Latest {group.latestAt?new Date(group.latestAt).toLocaleString():"—"}</span></div><b>{group.count}</b></header><p>{group.processed} processed · {group.count-group.processed} awaiting processing</p>{perspective==="separate"&&<div>{group.items.slice(0,20).map(item=><section key={item.id}><time>{new Date(item.receivedAt).toLocaleString()}</time><strong>{item.subject||item.sender||"Source item"}</strong><span>{item.sender}</span></section>)}</div>}</article>)}</div>{!sourceGroups.length&&<div className="report-empty">No connected-source records matched this period.</div>}</section>}
+    {source&&<div className="source-record-overlay" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setSource(null)}}><aside className="source-record-drawer" role="dialog" aria-modal="true" aria-labelledby="source-record-title"><header><span><small>Level 3 · Canonical source record</small><strong id="source-record-title">{String(source.title??source.id??"Transaction")}</strong></span><button type="button" onClick={()=>setSource(null)} aria-label="Close source record">×</button></header><p>{String(source.sourceLabel??"Audited detail")}</p><div>{Object.entries(source).filter(([key])=>key!=="dimensions").map(([key,value])=><section key={key}><span>{pretty(key)}</span><strong>{String(value??"—")}</strong></section>)}</div><footer>{typeof source.sourceRoute==="string"&&<a href={source.sourceRoute}>Open owning workflow →</a>}<button type="button" onClick={()=>setSource(null)}>Done</button><small>Press Escape or click outside this panel to close.</small></footer></aside></div>}
+  </main>
+}

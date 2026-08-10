@@ -1,0 +1,17 @@
+ALTER TABLE tax_preparation_profiles ADD COLUMN liquor_tax_rate REAL;
+ALTER TABLE tax_preparation_profiles ADD COLUMN consumer_compensating_tax_rate REAL;
+ALTER TABLE tax_financial_facts ADD COLUMN liquor_sales REAL NOT NULL DEFAULT 0;
+ALTER TABLE tax_financial_facts ADD COLUMN liquor_tax_collected REAL NOT NULL DEFAULT 0;
+ALTER TABLE tax_financial_facts ADD COLUMN taxable_out_of_state_purchases REAL NOT NULL DEFAULT 0;
+ALTER TABLE tax_financial_facts ADD COLUMN consumer_compensating_tax_paid REAL NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS review_advocacy_invites(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,review_id TEXT NOT NULL UNIQUE,guest_name TEXT NOT NULL,google_url TEXT,tripadvisor_url TEXT,facebook_url TEXT,status TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS integration_credential_vault(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,provider TEXT NOT NULL,account_label TEXT NOT NULL,credential_type TEXT NOT NULL,encrypted_secret TEXT NOT NULL,scopes_json TEXT NOT NULL,status TEXT NOT NULL,last_sync_at TEXT,last_error TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(organization_id,provider,account_label));
+CREATE INDEX IF NOT EXISTS integration_vault_provider_idx ON integration_credential_vault(organization_id,provider,status);
+CREATE TABLE IF NOT EXISTS marketing_content_items(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,title TEXT NOT NULL,content_type TEXT NOT NULL,body TEXT NOT NULL,media_url TEXT,channels_json TEXT NOT NULL,status TEXT NOT NULL,scheduled_at TEXT,approval_required INTEGER NOT NULL,approved_by TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS marketing_content_schedule_idx ON marketing_content_items(organization_id,status,scheduled_at);
+CREATE TABLE IF NOT EXISTS guest_behavior_events(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,anonymous_id TEXT NOT NULL,event_type TEXT NOT NULL,source TEXT NOT NULL,property_asset_id TEXT,consent_status TEXT NOT NULL,metadata_json TEXT NOT NULL,occurred_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS guest_behavior_consent_idx ON guest_behavior_events(organization_id,consent_status,event_type,occurred_at);
+CREATE TABLE IF NOT EXISTS audience_segments(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,name TEXT NOT NULL,rule_json TEXT NOT NULL,channel TEXT NOT NULL,offer_title TEXT NOT NULL,offer_url TEXT NOT NULL,status TEXT NOT NULL,created_by TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS platform_profile_updates(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,title TEXT NOT NULL,description TEXT NOT NULL,photo_url TEXT,platforms_json TEXT NOT NULL,status TEXT NOT NULL,approved_by TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS growth_platform_audit(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,actor_email TEXT NOT NULL,event_type TEXT NOT NULL,entity_type TEXT NOT NULL,entity_id TEXT NOT NULL,detail_json TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS growth_platform_audit_idx ON growth_platform_audit(organization_id,created_at);

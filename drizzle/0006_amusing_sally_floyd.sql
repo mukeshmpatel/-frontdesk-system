@@ -1,0 +1,3 @@
+CREATE UNIQUE INDEX `asset_calendar_identity_idx` ON `asset_calendar_blocks` (`organization_id`,`property_id`,`asset_type`,`asset_id`,`starts_at`,`ends_at`);--> statement-breakpoint
+CREATE UNIQUE INDEX `notification_escalation_source_idx` ON `notification_escalations` (`organization_id`,`source_type`,`source_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `system_audit_checksum_idx` ON `system_audit_trail` (`checksum`);

@@ -1,0 +1,3 @@
+import {requireChatGPTUser}from"../chatgpt-auth";import{ensureStaffWorkspace}from"../../db/staff";import{hasModuleAccess}from"../../db/access-management";import AaiqAccessDenied from"../components/aaiq-access-denied";import VideoIntelligenceClient from"./video-intelligence-client";import"./video-intelligence.css";
+export const dynamic="force-dynamic";
+export default async function VideoIntelligencePage(){const user=await requireChatGPTUser("/aaiq-video-intelligence");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_VIDEO_INTELLIGENCE"))return <AaiqAccessDenied moduleName="AAIQ Video Intelligence"/>;return <VideoIntelligenceClient/>}

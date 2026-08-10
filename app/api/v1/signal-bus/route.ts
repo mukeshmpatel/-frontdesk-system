@@ -1,0 +1,8 @@
+import { cookies } from "next/headers";
+import { getChatGPTUser } from "../../../chatgpt-auth";
+import { ensureStaffWorkspace } from "../../../../db/staff";
+import { hasModuleAccess } from "../../../../db/access-management";
+import { digitalEmployeeAuthorityCenter, publishSyntheticSignal, subscribeSignal } from "../../../../db/digital-employee-authority";
+export async function GET(){const u=await getChatGPTUser();if(!u)return Response.json({error:"Sign in required."},{status:401});if(!await hasModuleAccess(u.email,"AAIQ_AGENT_STUDIO"))return Response.json({error:"Digital Employee access required."},{status:403});await ensureStaffWorkspace(u.email,u.displayName);const propertyId=(await cookies()).get("aaiq_active_property")?.value;const data=await digitalEmployeeAuthorityCenter(u.email,propertyId);return data?Response.json(data,{headers:{"cache-control":"private, no-store"}}):Response.json({error:"Property access required."},{status:403});}
+export async function POST(request:Request){const u=await getChatGPTUser();if(!u)return Response.json({error:"Sign in required."},{status:401});if(!await hasModuleAccess(u.email,"AAIQ_AGENT_STUDIO"))return Response.json({error:"Digital Employee access required."},{status:403});await ensureStaffWorkspace(u.email,u.displayName);try{const body=await request.json() as Record<string,unknown>;const result=body.action==="SUBSCRIBE"?await subscribeSignal(u.email,body):body.action==="PUBLISH_SYNTHETIC_UAT"?await publishSyntheticSignal(u.email,body):null;return result?Response.json(result,{status:201}):Response.json({error:"Administrator action required."},{status:403});}catch(error){return Response.json({error:error instanceof Error?error.message:"Signal action failed."},{status:409});}}
+

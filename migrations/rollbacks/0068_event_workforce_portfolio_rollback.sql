@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS event_audit_events; DROP TABLE IF EXISTS event_communications; DROP TABLE IF EXISTS event_workflow_tasks; DROP TABLE IF EXISTS event_documents; DROP TABLE IF EXISTS event_portfolios; DROP TABLE IF EXISTS event_leads;

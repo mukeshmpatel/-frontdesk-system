@@ -1,0 +1,3 @@
+import {requireChatGPTUser} from "../chatgpt-auth";import UserManagementClient from "./user-management-client";import "./user-management.css";
+import {ensureStaffWorkspace} from "../../db/staff";import {hasModuleAccess} from "../../db/access-management";import AaiqAccessDenied from "../components/aaiq-access-denied";
+export const dynamic="force-dynamic";export default async function UserManagementPage(){const user=await requireChatGPTUser("/aaiq-user-management");await ensureStaffWorkspace(user.email,user.displayName);if(!await hasModuleAccess(user.email,"AAIQ_USER_MANAGEMENT"))return <AaiqAccessDenied moduleName="AAIQ User & Access Management"/>;return <UserManagementClient/>}

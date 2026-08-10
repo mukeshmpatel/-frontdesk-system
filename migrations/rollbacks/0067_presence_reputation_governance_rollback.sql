@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS reputation_recovery_cases; DROP TABLE IF EXISTS reputation_contact_drafts; DROP TABLE IF EXISTS reputation_journeys; DROP TABLE IF EXISTS workforce_presence_exceptions; DROP TABLE IF EXISTS workforce_presence_evidence;
