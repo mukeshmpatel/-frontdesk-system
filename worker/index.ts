@@ -8,6 +8,7 @@ import { runMaintenanceEscalations } from "../db/maintenance-repairs";
 import { runComplianceEscalations, runScheduledComplianceAutomation } from "../db/compliance-inspections";
 import { runScheduledQualityMonitoring } from "../db/quality-evaluations";
 import { runScheduledDigitalEmployeeBriefings } from "../app/server/agents/scheduled-digital-employees";
+import { runCashVarianceAnomalyEscalations, runReviewSentimentAnomalyEscalations } from "../db/anomaly-detection";
 
 interface Env {
   ASSETS: Fetcher;
@@ -84,6 +85,8 @@ const worker = {
       runComplianceEscalations(),
       runScheduledQualityMonitoring(),
       runScheduledDigitalEmployeeBriefings(),
+      runCashVarianceAnomalyEscalations(),
+      runReviewSentimentAnomalyEscalations(),
     ]));
   },
 };

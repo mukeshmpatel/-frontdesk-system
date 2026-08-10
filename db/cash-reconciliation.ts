@@ -199,7 +199,7 @@ async function sourceBatchSummary(organizationId: string, propertyId: string, bu
   return result.results;
 }
 
-async function namedManager(organizationId: string, propertyId: string) {
+export async function namedManager(organizationId: string, propertyId: string) {
   return database().prepare(
     `SELECT m.user_email,m.display_name,p.phone
      FROM staff_members m
