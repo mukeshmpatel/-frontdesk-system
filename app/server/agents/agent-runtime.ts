@@ -126,7 +126,10 @@ export type GroundedActionTool = {
   name: string;
   description: string;
   parameters: z.ZodObject<z.ZodRawShape>;
-  execute: (userEmail: string, params: Record<string, unknown>) => Promise<unknown>;
+  /** `run` is the same active agent run object beginAgentRun produced — pass it through
+   * to proposeApprovalCase() (db/agent-platform.ts) when a module has no domain-specific
+   * draft table of its own and needs to write into the shared ai_approval_cases queue. */
+  execute: (userEmail: string, params: Record<string, unknown>, run: any) => Promise<unknown>;
 };
 
 export type GroundedAgentConfig = {
@@ -182,7 +185,7 @@ export async function runGroundedOperationsAgent(
     execute: async (params: Record<string, unknown>) => {
       let output: unknown;
       try {
-        output = await action.execute(userEmail, params);
+        output = await action.execute(userEmail, params, run);
       } catch (error) {
         output = { error: error instanceof Error ? error.message : "This action could not be completed." };
       }

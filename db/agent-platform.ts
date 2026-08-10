@@ -339,6 +339,32 @@ export async function createAgentFallback(run: any, state: string, error: string
   return { id, state, status: "OPEN" };
 }
 
+/**
+ * Reusable, canonical approval-routing write for a GroundedActionTool whose
+ * module has no domain-specific draft table of its own (unlike, say,
+ * communication reply drafts or workforce requisitions). Inserting into
+ * ai_approval_cases — already the system's shared approval queue, already
+ * rendered with working Approve/Reject controls in Agent Studio's Action
+ * Required panel — means a new proposal is immediately visible and
+ * actionable without any new UI. Approving a case here does not itself
+ * dispatch anything; a human reviews the proposal and performs the real
+ * action (create the work order, reassign the room, open the variance case)
+ * exactly as the human-in-the-loop pattern already works for every other
+ * approval case in this table.
+ */
+export async function proposeApprovalCase(run: any, input: {
+  actionType: string; riskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; reason: string;
+}) {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await database().prepare(`INSERT INTO ai_approval_cases
+    (id,organization_id,property_id,run_id,action_type,risk_level,status,requested_by,assigned_role,reason,created_at)
+    VALUES (?,?,?,?,?,?,'PENDING',?,'MANAGER',?,?)`)
+    .bind(id, run.context.organizationId, run.property.id, run.id, input.actionType,
+      input.riskLevel, run.context.email, input.reason.slice(0, 2000), now).run();
+  return { approvalId: id, status: "PENDING_APPROVAL" };
+}
+
 export function agentDatabase() {
   return database();
 }

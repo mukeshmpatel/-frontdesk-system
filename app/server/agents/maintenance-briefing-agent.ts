@@ -1,8 +1,13 @@
 import { Agent, OpenAIProvider, Runner, tool } from "@openai/agents";
 import { z } from "zod";
-import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, recordToolCall } from "../../../db/agent-platform";
+import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, proposeApprovalCase, recordToolCall } from "../../../db/agent-platform";
 import { getIntegrationCredential } from "../../../db/open-source-integrations";
 import { buildOutcomeRecord, type GroundedOperationsOutput } from "./agent-runtime";
+
+const actionTakenSchema = z.object({
+  tool: z.string(), summary: z.string(), referenceId: z.string().nullable(),
+  beforeState: z.string().nullable(), afterState: z.string().nullable(),
+});
 
 const briefingSchema = z.object({
   headline: z.string(),
@@ -15,6 +20,7 @@ const briefingSchema = z.object({
   complianceWatch: z.array(z.string()),
   partsAndWarrantyWatch: z.array(z.string()),
   missingInformation: z.array(z.string()),
+  actionsTaken: z.array(actionTakenSchema).default([]),
   confidence: z.number().min(0).max(1),
 });
 
@@ -24,7 +30,8 @@ const briefingSchema = z.object({
 export function normalizeMaintenanceBriefing(briefing: {
   headline: string; executiveSummary: string; recommendedNextAction: string;
   priorities: { title: string; reason: string; risk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; sourceIds: string[] }[];
-  complianceWatch: string[]; partsAndWarrantyWatch: string[]; missingInformation: string[]; confidence: number;
+  complianceWatch: string[]; partsAndWarrantyWatch: string[]; missingInformation: string[];
+  actionsTaken?: GroundedOperationsOutput["actionsTaken"]; confidence: number;
 }): GroundedOperationsOutput {
   const criticalCount = briefing.priorities.filter(item => item.risk === "CRITICAL").length;
   const highCount = briefing.priorities.filter(item => item.risk === "HIGH").length;
@@ -39,7 +46,7 @@ export function normalizeMaintenanceBriefing(briefing: {
     findings: briefing.priorities.map(item => ({ title: item.title, detail: item.reason, risk: item.risk, sourceIds: item.sourceIds })),
     watchItems: [...briefing.complianceWatch, ...briefing.partsAndWarrantyWatch],
     missingInformation: briefing.missingInformation,
-    actionsTaken: [],
+    actionsTaken: briefing.actionsTaken ?? [],
     confidence: briefing.confidence,
   };
 }
@@ -100,6 +107,23 @@ export async function runMaintenanceBriefing(userEmail: string, intent: string) 
       return rows.results;
     },
   });
+  const proposeDispatchTool = tool({
+    name: "propose_maintenance_dispatch",
+    description: "Propose dispatching a specific open work order (or a newly needed repair grounded in read_maintenance_work/read_compliance_due/read_asset_context) to a technician. This only creates a PENDING approval case for a manager to review; it never assigns a technician, changes a work order's status, or reserves parts.",
+    parameters: z.object({
+      workOrderIdOrSummary: z.string().min(1).describe("The id of an existing work order from read_maintenance_work, or a short summary if proposing a repair not yet in the queue."),
+      reason: z.string().min(10).describe("Why this needs dispatch now — cite the specific record, priority, or compliance due date."),
+      priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).describe("Urgency, matching the same scale used by read_maintenance_work."),
+    }),
+    execute: async ({ workOrderIdOrSummary, reason, priority }) => {
+      const output = await proposeApprovalCase(run, {
+        actionType: "MAINTENANCE_DISPATCH_PROPOSAL", riskLevel: priority,
+        reason: `${workOrderIdOrSummary} — ${reason}`,
+      });
+      await recordToolCall(run, "propose_maintenance_dispatch", { workOrderIdOrSummary, reason, priority }, output);
+      return output;
+    },
+  });
 
   try {
     const agent = new Agent({
@@ -108,9 +132,13 @@ export async function runMaintenanceBriefing(userEmail: string, intent: string) 
       instructions: `You are a governed hotel maintenance briefing agent. Use only the supplied
 property-scoped tools. Cite source record IDs in every priority. Never invent work, assets, warranties,
 parts, safety facts, or compliance obligations. Distinguish missing data. Recommend exactly one next
-action based on life safety, guest impact, SLA, due date, and available evidence. You are read-only:
-never change records, approve work, order parts, return equipment to service, or bypass safety rules.`,
-      tools: [workTool, complianceTool, assetTool],
+action based on life safety, guest impact, SLA, due date, and available evidence. Your read tools never
+change anything. When a specific work order or repair clearly needs to be dispatched to a technician
+now and is not already assigned, call propose_maintenance_dispatch with a grounded reason and priority
+— this only creates a manager approval case, it never assigns a technician, reserves parts, or returns
+equipment to service on its own, and every such call must be listed in actionsTaken. Never approve
+work, order parts, or bypass safety rules yourself.`,
+      tools: [workTool, complianceTool, assetTool, proposeDispatchTool],
       outputType: briefingSchema,
     });
     const runner = new Runner({

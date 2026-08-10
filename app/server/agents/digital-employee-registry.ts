@@ -19,6 +19,7 @@ import { eventWorkforceCenter } from "../../../db/event-workforce";
 import { taxCenter } from "../../../db/tax-preparation";
 import { cashReconciliationDetail } from "../../../db/cash-reconciliation";
 import { otaCenter } from "../../../db/ota-reconciliation";
+import { proposeApprovalCase } from "../../../db/agent-platform";
 
 const GOVERNANCE_RULES = `You are a governed AAIQ hotel operations Digital Employee. Use only the
 supplied property-scoped tools; never invent facts, records, guests, amounts, or compliance
@@ -104,6 +105,37 @@ const proposeJobRequisitionAction: GroundedActionTool = {
   },
 };
 
+const proposeHousekeepingTaskAction: GroundedActionTool = {
+  name: "propose_housekeeping_task",
+  description: "Flag a specific room for a housekeeping task (return-to-service inspection, deep clean, or a supply/maintenance handoff) grounded in what read_housekeeping_assignments showed. This only creates a PENDING approval case for a manager to review; it never assigns a housekeeper or changes any room's real status.",
+  parameters: z.object({
+    roomNumber: z.string().min(1).describe("The room number from read_housekeeping_assignments this task concerns."),
+    taskType: z.enum(["RETURN_TO_SERVICE_INSPECTION", "DEEP_CLEAN", "SUPPLY_HANDOFF", "MAINTENANCE_HANDOFF"]).describe("The kind of housekeeping task being proposed."),
+    reason: z.string().min(10).describe("Why this task is needed — cite the specific exception, status, or departure detail from read_housekeeping_assignments."),
+    urgent: z.boolean().describe("True if this is guest-impacting or blocking a room turn; false otherwise."),
+  }),
+  execute: async (userEmail, params, run) => proposeApprovalCase(run, {
+    actionType: "HOUSEKEEPING_TASK_PROPOSAL",
+    riskLevel: params.urgent ? "HIGH" : "MEDIUM",
+    reason: `Room ${String(params.roomNumber ?? "")} — ${String(params.taskType ?? "").replaceAll("_", " ").toLowerCase()}: ${String(params.reason ?? "")}`,
+  }),
+};
+
+const proposeCashVarianceEscalationAction: GroundedActionTool = {
+  name: "propose_cash_variance_escalation",
+  description: "Flag a specific cash or check variance from read_cash_reconciliation for manager review. This only creates a PENDING approval case; it never posts to the bank or ledger and never changes any reconciliation record.",
+  parameters: z.object({
+    businessDate: z.string().min(1).describe("The business date the variance occurred on, exactly as shown by read_cash_reconciliation."),
+    varianceSummary: z.string().min(10).describe("What the variance is and why it needs review — cite the specific source total, shift, or drop record from read_cash_reconciliation."),
+    severity: z.enum(["MEDIUM", "HIGH", "CRITICAL"]).describe("CRITICAL for a suspected loss or fraud indicator, HIGH for a material unexplained gap, MEDIUM for a minor timing difference."),
+  }),
+  execute: async (userEmail, params, run) => proposeApprovalCase(run, {
+    actionType: "CASH_VARIANCE_ESCALATION",
+    riskLevel: (["MEDIUM", "HIGH", "CRITICAL"].includes(String(params.severity)) ? params.severity : "MEDIUM") as "MEDIUM" | "HIGH" | "CRITICAL",
+    reason: `Business date ${String(params.businessDate ?? "")} — ${String(params.varianceSummary ?? "")}`,
+  }),
+};
+
 export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "executive-briefing": {
     agentName: "AAIQ Digital General Manager",
@@ -123,8 +155,9 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "housekeeping-coordinator": {
     agentName: "AAIQ Housekeeping Coordinator",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Housekeeping Coordinator. Prioritize today's room turns by departure urgency, VIP status, and open exceptions. Identify supply or maintenance handoffs blocking a turn.`,
+    instructions: `${GOVERNANCE_RULES}\nYou are the Housekeeping Coordinator. Prioritize today's room turns by departure urgency, VIP status, and open exceptions. Identify supply or maintenance handoffs blocking a turn. When a specific room needs a task that isn't already assigned — a return-to-service inspection, a deep clean, or a supply/maintenance handoff — call propose_housekeeping_task with the room number and a grounded reason; this only creates a manager approval case, it never assigns a housekeeper or changes the room's real status.`,
     tools: [housekeepingTool, canonicalFacts],
+    actions: [proposeHousekeepingTaskAction],
   },
   "compliance-inspector": {
     agentName: "AAIQ Compliance Inspector",
@@ -175,8 +208,9 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "cash-auditor": {
     agentName: "AAIQ Digital Cash & Check Auditor",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Cash & Check Auditor. Reconcile the latest authorized cash source against shift, drop, and custody records for the current business date. Never post to the bank or ledger; flag variances for a manager to resolve.`,
+    instructions: `${GOVERNANCE_RULES}\nYou are the Cash & Check Auditor. Reconcile the latest authorized cash source against shift, drop, and custody records for the current business date. Never post to the bank or ledger. When read_cash_reconciliation shows a specific unexplained variance, call propose_cash_variance_escalation with the business date and a grounded summary instead of only mentioning it in prose — this only creates a manager approval case, it never posts anything or changes any reconciliation record.`,
     tools: [cashTool],
+    actions: [proposeCashVarianceEscalationAction],
   },
   "hiring-manager": {
     agentName: "AAIQ Digital Hiring & Onboarding Manager",
