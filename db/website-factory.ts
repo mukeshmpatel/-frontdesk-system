@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { activeStaffContext } from "./staff";
 import { authorizedPropertyList, authorizedPropertyScope } from "./property-scope";
+import { getIntegrationCredential } from "./open-source-integrations";
 
 function db(): D1Database {
   if (!env.DB) throw new Error("Website Factory storage is unavailable.");
@@ -29,7 +30,15 @@ async function allowedProperties(_organizationId: string, email: string, _role: 
   return {results:scoped?.properties||[],canonicalPropertyId:scoped?.canonicalPropertyId||null};
 }
 
-async function propertyProfile(organizationId: string, propertyContextId?: string) {
+type PropertyProfile = {
+  property: (Record<string, any> & { assetRootId: string | null }) | null;
+  assets: Record<string, any>[];
+  rooms: Record<string, any>[];
+  spaces: Record<string, any>[];
+  roomTypes: string[];
+};
+
+async function propertyProfile(organizationId: string, propertyContextId?: string): Promise<PropertyProfile> {
   let canonical = propertyContextId
     ? await db().prepare("SELECT * FROM property_contexts WHERE id=? AND organization_id=?")
       .bind(propertyContextId, organizationId).first<Record<string, any>>()
@@ -106,7 +115,7 @@ export async function websiteFactory(email: string, propertyContextId?: string) 
   const activeId = scoped?.property.id||properties.results[0]?.id;
   const profile = await propertyProfile(context.organizationId, activeId);
   const projects = activeId
-    ? await db().prepare(`SELECT * FROM website_factory_projects WHERE organization_id=? AND property_context_id=?
+    ? await db().prepare(`SELECT * FROM website_factory_projects WHERE organization_id=? AND property_context_id=? AND status!='ARCHIVED'
       ORDER BY updated_at DESC`).bind(context.organizationId,activeId).all<Record<string, any>>()
     : {results:[] as Record<string,any>[]};
   const reconciliations = context.role === "admin" && !properties.canonicalPropertyId
@@ -324,4 +333,151 @@ export async function websitePreview(slug: string, email?: string) {
   const context = await activeStaffContext(email);
   if (!context || context.organizationId !== project.organization_id) return null;
   return { ...project, content: safeJson(project.content_json, {}), seo: safeJson(project.seo_json, {}) };
+}
+
+/** Real verified facts about the active property — the only grounding source
+ * the AI generation agent gets besides its own web research. Never more than
+ * what the manual template flow above already relies on. */
+export async function propertyFactsForGeneration(email: string, propertyContextId?: string | null) {
+  const context = await activeStaffContext(email);
+  if (!context) return null;
+  const scoped = await authorizedPropertyScope(email, propertyContextId);
+  const profile = await propertyProfile(context.organizationId, scoped?.property.id);
+  if (!profile.property) return { property: null };
+  return {
+    property: {
+      name: profile.property.name, address: profile.property.address || null,
+      timezone: profile.property.timezone || null, roomTypes: profile.roomTypes,
+      roomCount: profile.rooms.length, amenities: profile.spaces.map((space: any) => space.name),
+    },
+  };
+}
+
+/**
+ * Real web search — only runs when an admin has configured a Brave Search
+ * API key in Integration Center. Returns snippets (title/url/description),
+ * never fetched or scraped page content, so the agent has real, citable
+ * source material without this codebase taking on an HTML-parsing surface.
+ * Never invents a result when the key is missing or the request fails; the
+ * caller must treat researchProperty(...).connected === false as "no
+ * external research available," not as "nothing found."
+ */
+export async function researchProperty(organizationId: string, query: string) {
+  const apiKey = await getIntegrationCredential(organizationId, "BRAVE_SEARCH", "BRAVE_SEARCH_API_KEY");
+  if (!apiKey) return { connected: false, results: [] as { title: string; url: string; description: string }[] };
+  try {
+    const response = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query.slice(0, 200))}&count=6`, {
+      headers: { Accept: "application/json", "X-Subscription-Token": apiKey },
+    });
+    if (!response.ok) return { connected: true, error: `Search request failed (${response.status}).`, results: [] };
+    const data = await response.json() as { web?: { results?: Array<{ title?: string; url?: string; description?: string }> } };
+    const results = (data.web?.results ?? []).slice(0, 6).map(item => ({
+      title: String(item.title || "").slice(0, 200),
+      url: String(item.url || ""),
+      description: String(item.description || "").replace(/<[^>]+>/g, "").slice(0, 400),
+    })).filter(item => item.url);
+    return { connected: true, results };
+  } catch {
+    return { connected: true, error: "Search request failed.", results: [] };
+  }
+}
+
+export type GeneratedWebsiteOption = {
+  optionLabel: string; templateId: string; heroTitle: string; heroDescription: string;
+  amenitiesHighlight: string[]; localAreaBlurb: string; callToAction: string;
+};
+
+/**
+ * Persists an AI-generated batch of website options as DRAFT projects
+ * sharing a variant_group_id, so a human can compare and pick one via the
+ * existing chooseWebsiteOption()/updateWebsiteProject() PUBLISH flow. Unlike
+ * createWebsiteProject() above, this does not block on an existing DRAFT —
+ * only on an existing PUBLISHED site, since publishing (not drafting) is
+ * this property's actual single-live-site constraint.
+ */
+export async function createWebsiteOptionSet(email: string, input: {
+  propertyContextId?: string | null; options: GeneratedWebsiteOption[];
+  researchUsed: boolean; sourcesUsed: { label: string; url: string | null }[];
+}) {
+  const context = await activeStaffContext(email); if (!context || context.role !== "admin") return null;
+  await ensure();
+  const scoped = await authorizedPropertyScope(email, input.propertyContextId);
+  const profile = await propertyProfile(context.organizationId, scoped?.property.id);
+  if (!profile.property) throw new Error("Select a canonical property before generating a website.");
+  const published = await db().prepare(`SELECT id FROM website_factory_projects
+    WHERE organization_id=? AND property_context_id=? AND status='PUBLISHED' LIMIT 1`)
+    .bind(context.organizationId, profile.property.id).first();
+  if (published) throw new Error("This property already has a published website. Archive it before generating new options.");
+  if (!input.options.length) throw new Error("No website options were generated.");
+  const variantGroupId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const researchSources = JSON.stringify(input.sourcesUsed);
+  const created: { id: string; slug: string; variantLabel: string }[] = [];
+  const statements: D1PreparedStatement[] = [];
+  for (const option of input.options) {
+    const template = WEBSITE_TEMPLATES.find(item => item.id === option.templateId) ?? WEBSITE_TEMPLATES[0];
+    const id = crypto.randomUUID();
+    const slug = slugify(`${profile.property.name}-${option.optionLabel}-${id.slice(0, 6)}`);
+    const content = {
+      brandName: profile.property.name, eyebrow: "AI-generated site option", heroTitle: option.heroTitle,
+      heroDescription: option.heroDescription, address: profile.property.address || "", phone: "", bookingUrl: "",
+      roomCount: profile.rooms.length, roomTypes: profile.roomTypes,
+      amenities: option.amenitiesHighlight.length ? option.amenitiesHighlight : profile.spaces.map((s: any) => s.name),
+      localAreaBlurb: option.localAreaBlurb, callToAction: option.callToAction,
+      brandColor: template.brand, accentColor: template.accent, templateId: template.id, templateName: template.name, themeStyle: template.style,
+      pages: ["Home", "Rooms", "Amenities", "Local Guide", "Contact"],
+      sections: { rooms: true, amenities: true, gallery: true, reviews: true, blog: false, events: false, chatbot: true, voice: false },
+    };
+    const missing = [
+      !content.address && "Property street address", !content.phone && "Public hotel phone",
+      !content.bookingUrl && "Direct booking URL", !profile.roomTypes.length && "Room types",
+    ].filter(Boolean);
+    const seo = { title: `${profile.property.name} | Official Hotel Website`, description: option.heroDescription.slice(0, 155),
+      status: "NEEDS_REVIEW", aeoQuestions: ["What amenities does the hotel offer?", "How do I book directly?"] };
+    statements.push(db().prepare(`INSERT INTO website_factory_projects
+      (id,organization_id,property_asset_id,name,slug,theme,status,content_json,seo_json,missing_fields_json,
+       created_by,created_at,updated_at,property_context_id,variant_group_id,variant_label,research_sources_json)
+      VALUES (?,?,?,?,?,'${template.style}','DRAFT',?,?,?,?,?,?,?,?,?,?)`)
+      .bind(id, context.organizationId, profile.property.assetRootId || "", profile.property.name, slug,
+        JSON.stringify(content), JSON.stringify(seo), JSON.stringify(missing), email, now, now,
+        profile.property.id, variantGroupId, option.optionLabel, researchSources));
+    statements.push(db().prepare(`INSERT INTO website_factory_revisions
+      (id,organization_id,project_id,revision_number,snapshot_json,change_summary,created_by,created_at)
+      VALUES (?,?,?,1,?,?,?,?)`)
+      .bind(crypto.randomUUID(), context.organizationId, id,
+        JSON.stringify({ name: profile.property.name, content, seo, missing }),
+        `AI-generated option: ${option.optionLabel}${input.researchUsed ? " (web research used)" : ""}`, email, now));
+    statements.push(db().prepare(`INSERT INTO website_factory_audit
+      (id,organization_id,project_id,actor_email,event_type,detail_json,created_at)
+      VALUES (?,?,?,?, 'AI_SITE_OPTION_GENERATED',?,?)`)
+      .bind(crypto.randomUUID(), context.organizationId, id, email,
+        JSON.stringify({ variantGroupId, optionLabel: option.optionLabel, researchUsed: input.researchUsed, missing }), now));
+    created.push({ id, slug, variantLabel: option.optionLabel });
+  }
+  await db().batch(statements);
+  return { variantGroupId, projects: created };
+}
+
+/** Human picks one AI-generated option; its siblings in the same batch are
+ * archived. The chosen project stays DRAFT — publishing still requires the
+ * existing, unchanged updateWebsiteProject(..., {action:"PUBLISH"}) step. */
+export async function chooseWebsiteOption(email: string, projectId: string) {
+  const context = await activeStaffContext(email); if (!context || context.role !== "admin") return null;
+  await ensure();
+  const project = await db().prepare(`SELECT * FROM website_factory_projects WHERE id=? AND organization_id=?`)
+    .bind(projectId, context.organizationId).first<Record<string, any>>();
+  if (!project) throw new Error("Website option was not found.");
+  if (!project.variant_group_id) throw new Error("This project is not part of a generated option set.");
+  const now = new Date().toISOString();
+  await db().batch([
+    db().prepare(`UPDATE website_factory_projects SET status='ARCHIVED',updated_at=?
+      WHERE organization_id=? AND variant_group_id=? AND id!=? AND status!='PUBLISHED'`)
+      .bind(now, context.organizationId, project.variant_group_id, projectId),
+    db().prepare(`INSERT INTO website_factory_audit
+      (id,organization_id,project_id,actor_email,event_type,detail_json,created_at)
+      VALUES (?,?,?,?, 'AI_SITE_OPTION_CHOSEN',?,?)`)
+      .bind(crypto.randomUUID(), context.organizationId, projectId, email,
+        JSON.stringify({ variantGroupId: project.variant_group_id }), now),
+  ]);
+  return { id: projectId, status: project.status, previewUrl: `/site-preview/${project.slug}` };
 }

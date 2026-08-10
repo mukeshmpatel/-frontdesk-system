@@ -33,7 +33,7 @@ test("truthful baseline inventories every required item class without self-verif
   assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "module").length, 33);
   assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "button").length, sourceButtonCount());
   assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "digital_employee_duty").length, 23);
-  assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "integration").length, 35);
+  assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "integration").length, 36);
   assert.equal(CAPABILITY_LEDGER_BASELINE.filter(row => row.itemType === "report").length, 20);
   assert.equal(new Set(CAPABILITY_LEDGER_BASELINE.map(row => row.itemKey)).size, CAPABILITY_LEDGER_BASELINE.length);
 });

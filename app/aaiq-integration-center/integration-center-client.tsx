@@ -15,6 +15,7 @@ export default function IntegrationCenterClient(){
    QDRANT:[{key:"QDRANT_API_KEY",label:"Qdrant Database API key",help:"Use the cluster Database API key—not a Cloud Management key."},{key:"OPENAI_API_KEY",label:"OpenAI embedding API key",help:"Required for semantic memory embeddings."}],
    OPENAI_AGENTS:[{key:"OPENAI_API_KEY",label:"OpenAI Agents API key",help:"Use a restricted project key with Responses: Request. Embeddings-only permission is not sufficient for governed agents."}],
    GOOGLE_AI:[{key:"GOOGLE_AI_API_KEY",label:"Google AI (Gemini) API key",help:"From Google AI Studio. Used only when no OpenAI key is configured, or when a Digital Employee explicitly falls back to it."}],
+   BRAVE_SEARCH:[{key:"BRAVE_SEARCH_API_KEY",label:"Brave Search API key",help:"Brave Search API has a free tier. Used by the Website Manager to research a named property before writing content — without this, generation is grounded only in AAIQ's own verified property profile."}],
    POSTIZ:[{key:"POSTIZ_API_KEY",label:"Postiz public API key"}],
    SUPERSET:[
     {key:"SUPERSET_API_TOKEN",label:"Preset API token name",help:"Permanent token name from Preset Manager. AAIQ exchanges it server-side for a short-lived JWT."},

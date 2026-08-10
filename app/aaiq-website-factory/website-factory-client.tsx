@@ -18,6 +18,9 @@ export default function WebsiteFactoryClient() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
   const [templateId,setTemplateId]=useState("MODERN_DIRECT");
+  const [aiQuery,setAiQuery]=useState("");
+  const [aiVariantGroupId,setAiVariantGroupId]=useState("");
+  const [aiMeta,setAiMeta]=useState<{researchUsed:boolean;sourcesUsed:Array<{label:string;url:string|null}>;missingInformation:string[]}|null>(null);
   async function load() {
     const response = await fetch("/api/v1/website-factory", { cache: "no-store" });
     setData(await response.json());
@@ -38,6 +41,34 @@ export default function WebsiteFactoryClient() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await action(Object.fromEntries(form), "A reviewable website project was created from verified property data.");
+  }
+  async function generateAiOptions(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!aiQuery.trim()) return;
+    setBusy("GENERATE_WEBSITE_OPTIONS");
+    const response = await fetch("/api/v1/website-factory", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "GENERATE_WEBSITE_OPTIONS", query: aiQuery.trim() }),
+    });
+    const result = await response.json() as any;
+    setBusy("");
+    if (!response.ok) { setNotice(result.error ?? "Generation failed."); return; }
+    if (result.status === "MANUAL_FALLBACK") { setNotice(result.message ?? "Generation could not complete — preserved for manual completion."); return; }
+    setAiVariantGroupId(result.variantGroupId ?? "");
+    setAiMeta({ researchUsed: Boolean(result.researchUsed), sourcesUsed: result.sourcesUsed ?? [], missingInformation: result.missingInformation ?? [] });
+    setNotice(`Generated ${result.projects?.length ?? 0} website option(s)${result.researchUsed ? ", grounded in live web research" : " from your verified property profile"}.`);
+    await load();
+  }
+  async function chooseOption(projectId: string) {
+    setBusy(`CHOOSE:${projectId}`);
+    const response = await fetch("/api/v1/website-factory", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "CHOOSE_WEBSITE_OPTION", projectId }),
+    });
+    const result = await response.json() as any;
+    setBusy("");
+    setNotice(response.ok ? "Option chosen — the other drafts in this batch were archived. Open it to review and publish." : (result.error ?? "Could not choose this option."));
+    if (response.ok) { setAiVariantGroupId(""); setAiMeta(null); await load(); }
   }
   async function makePlan(candidate: Row) {
     await action({ action: "CREATE_RECONCILIATION_PLAN", assetId: candidate.root.id, code: candidate.proposedCode, address: candidate.proposedAddress },
@@ -64,6 +95,8 @@ export default function WebsiteFactoryClient() {
   }
   const activeProjects = useMemo(() => (data?.projects ?? []).filter((project: Row) =>
     !data?.activePropertyId || project.property_context_id === data.activePropertyId), [data]);
+  const aiOptionProjects = useMemo(() => aiVariantGroupId
+    ? activeProjects.filter((project: Row) => project.variant_group_id === aiVariantGroupId) : [], [activeProjects, aiVariantGroupId]);
   if (!data) return <main className="wf-shell wf-loading">Loading the Website Factory workspace…</main>;
   const property = data.profile.property;
   return <main className="wf-shell">
@@ -114,6 +147,25 @@ export default function WebsiteFactoryClient() {
               <button onClick={() => { setSelected(project); setTab("editor"); }}>Edit website</button></footer>
           </div>
         </article>) : <div className="wf-empty"><b>No website is connected to this property.</b><p>Create a governed draft from its verified rooms, amenities and contact information.</p><button onClick={() => setTab("create")}>Create website</button></div>}</div>
+    </section>}
+    {tab === "create" && <section className="wf-ai-generate">
+      <header><p className="wf-kicker">AI-DRIVEN · GROUNDED IN VERIFIED DATA</p><h2>Generate 3 website options</h2>
+        <p>Describe the property (e.g. &quot;Days Inn Salina&quot;) and AAIQ will draft 3 genuinely distinct site options — grounded in this property&apos;s verified profile, and in live web research when a Brave Search key is configured in Integration Center.</p></header>
+      <form onSubmit={generateAiOptions} className="wf-ai-form">
+        <input value={aiQuery} onChange={e => setAiQuery(e.target.value)} placeholder="Make a website for Days Inn Salina" disabled={busy === "GENERATE_WEBSITE_OPTIONS" || !property} />
+        <button disabled={busy === "GENERATE_WEBSITE_OPTIONS" || !property || !aiQuery.trim()}>{busy === "GENERATE_WEBSITE_OPTIONS" ? "Researching and drafting…" : "Generate 3 options"}</button>
+      </form>
+      {!property && <p className="wf-missing"><b>Select a canonical property before generating.</b></p>}
+      {aiMeta && <p className="wf-ai-meta">{aiMeta.researchUsed ? "Grounded in live web research plus your verified property profile." : "Grounded only in your verified property profile — no web research connector is configured."}
+        {aiMeta.missingInformation.length > 0 && <span> Missing: {aiMeta.missingInformation.join(", ")}.</span>}</p>}
+      {aiOptionProjects.length > 0 && <div className="wf-ai-options">{aiOptionProjects.map((project: Row) => <article className="wf-ai-option" key={project.id}>
+        <div className="wf-project-preview" style={{ background: `linear-gradient(135deg,${project.content.brandColor || "#17395f"},#0f2036)` }}>
+          <small>{project.variant_label || "OPTION"}</small><h3>{project.content.heroTitle || project.name}</h3>
+          <p>{project.content.heroDescription}</p>
+        </div>
+        <footer><a href={`/site-preview/${project.slug}`} target="_blank">Preview ↗</a>
+          <button disabled={busy === `CHOOSE:${project.id}`} onClick={() => void chooseOption(project.id)}>{busy === `CHOOSE:${project.id}` ? "Choosing…" : "Choose this one"}</button></footer>
+      </article>)}</div>}
     </section>}
     {tab === "create" && <section className="wf-create-workspace">
       <div><p className="wf-kicker">VERIFIED INPUTS</p><h2>Create from the canonical property</h2>
