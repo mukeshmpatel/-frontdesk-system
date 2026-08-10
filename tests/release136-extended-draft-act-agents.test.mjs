@@ -34,7 +34,7 @@ test("the maintenance dispatcher gains a scoped dispatch proposal without losing
   assert.match(service, /const proposeDispatchTool = tool\(\{/);
   assert.match(service, /name: "propose_maintenance_dispatch"/);
   assert.match(service, /it never assigns a technician, changes a work order's status, or reserves parts/);
-  assert.match(service, /tools: \[workTool, complianceTool, assetTool, proposeDispatchTool\]/);
+  assert.match(service, /tools: \[workTool, complianceTool, assetTool, documentVaultTool, proposeDispatchTool\]/);
   assert.match(service, /Never approve\nwork, order parts, or bypass safety rules yourself\./);
 });
 

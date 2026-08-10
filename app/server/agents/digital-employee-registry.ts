@@ -12,6 +12,7 @@ import { communicationCenter, createReplyDraft } from "../../../db/communication
 import { housekeepingAssignmentsToday } from "../../../db/housekeeping-departures";
 import { complianceCenter } from "../../../db/compliance-inspections";
 import { propertyIntelligence } from "../../../db/property-intelligence";
+import { documentVaultReferences } from "../../../db/document-vault";
 import { reviewCenter, updateResponseDraft } from "../../../db/review-intelligence";
 import { websiteFactory } from "../../../db/website-factory";
 import { workforceLifecycleAction, workforceLifecycleCenter } from "../../../db/workforce-lifecycle";
@@ -51,6 +52,7 @@ const housekeepingTool = centerTool("read_housekeeping_assignments", "Read today
 const complianceTool = centerTool("read_compliance_center", "Read the property's compliance programs, inspection cases, evidence links, and open exceptions.", complianceCenter);
 const communicationTool = centerTool("read_communication_center", "Read the property's open communication threads, drafts, and inbound messages across all connected channels.", communicationCenter);
 const cashTool = centerTool("read_cash_reconciliation", "Read today's authorized cash reconciliation: source totals, shift breakdown, and policy.", (email) => cashReconciliationDetail(email, {}));
+const documentVaultTool = centerTool("search_document_vault", "Read the property's Document Vault: verified document titles, types, departments, and any human-reviewed classification note. Full document text is not extracted (OCR is not configured) — this returns metadata only, never invented body content. Cite a document by its title and status, and tell the human to open it in the Document Vault to read the actual document.", documentVaultReferences);
 const reviewTool = centerTool("read_review_center", "Read recent guest reviews, response drafts, recovery cases, and connected review sources.", reviewCenter);
 
 const proposeGuestReplyAction: GroundedActionTool = {
@@ -140,29 +142,29 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "executive-briefing": {
     agentName: "AAIQ Digital General Manager",
     instructions: `${GOVERNANCE_RULES}\nYou are the Digital General Manager. Synthesize signal across housekeeping, compliance, cash, guest communications, and reviews into one executive briefing: what needs the GM's attention today, ranked by guest impact, safety, and financial exposure. Cross-reference departments when they connect (e.g. an overdue compliance item blocking a room turn, or a cash variance coinciding with a guest complaint) instead of listing each department in isolation. If a tool returns nothing of note, say so briefly rather than omitting the department.`,
-    tools: [canonicalFacts, housekeepingTool, complianceTool, cashTool, communicationTool, reviewTool],
+    tools: [canonicalFacts, housekeepingTool, complianceTool, cashTool, communicationTool, reviewTool, documentVaultTool],
   },
   "assistant-general-manager": {
     agentName: "AAIQ Digital Assistant General Manager",
     instructions: `${GOVERNANCE_RULES}\nYou are the Digital Assistant General Manager. Audit shift handoff readiness: housekeeping turn status, open work, open guest conversations awaiting reply, and labor exposure. Flag anything that would embarrass the GM if left unresolved before the next shift.`,
-    tools: [canonicalFacts, housekeepingTool, communicationTool],
+    tools: [canonicalFacts, housekeepingTool, communicationTool, documentVaultTool],
   },
   "front-desk": {
     agentName: "AAIQ Digital Front Desk Agent",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Front Desk Agent. Triage open guest and internal conversations. For any thread that clearly needs a reply and does not involve a refund, key issuance, payment, or something you are not confident about, call propose_guest_reply with the exact threadId and a specific, guest-ready draft — this only creates an AWAITING_APPROVAL draft for a human to review and send, never delivers anything itself. Escalate refunds, key issuance, and payment requests in your summary instead of drafting a reply for them.`,
-    tools: [communicationTool, canonicalFacts],
+    instructions: `${GOVERNANCE_RULES}\nYou are the Digital Front Desk Agent. Triage open guest and internal conversations. For any thread that clearly needs a reply and does not involve a refund, key issuance, payment, or something you are not confident about, call propose_guest_reply with the exact threadId and a specific, guest-ready draft — this only creates an AWAITING_APPROVAL draft for a human to review and send, never delivers anything itself. Escalate refunds, key issuance, and payment requests in your summary instead of drafting a reply for them. Use search_document_vault when a guest-facing policy (cancellation, pet, extra fee) would help ground a reply — cite the document by title, never invent its wording.`,
+    tools: [communicationTool, canonicalFacts, documentVaultTool],
     actions: [proposeGuestReplyAction],
   },
   "housekeeping-coordinator": {
     agentName: "AAIQ Housekeeping Coordinator",
     instructions: `${GOVERNANCE_RULES}\nYou are the Housekeeping Coordinator. Prioritize today's room turns by departure urgency, VIP status, and open exceptions. Identify supply or maintenance handoffs blocking a turn. When a specific room needs a task that isn't already assigned — a return-to-service inspection, a deep clean, or a supply/maintenance handoff — call propose_housekeeping_task with the room number and a grounded reason; this only creates a manager approval case, it never assigns a housekeeper or changes the room's real status.`,
-    tools: [housekeepingTool, canonicalFacts],
+    tools: [housekeepingTool, canonicalFacts, documentVaultTool],
     actions: [proposeHousekeepingTaskAction],
   },
   "compliance-inspector": {
     agentName: "AAIQ Compliance Inspector",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Compliance Inspector. Review due and overdue compliance/inspection cases, missing evidence, and licensed-signoff requirements. Rank by life-safety exposure and due date. A qualified human still performs and signs every physical inspection.`,
-    tools: [complianceTool],
+    instructions: `${GOVERNANCE_RULES}\nYou are the Compliance Inspector. Review due and overdue compliance/inspection cases, missing evidence, and licensed-signoff requirements. Rank by life-safety exposure and due date. Use search_document_vault to check whether a relevant POLICY document already exists before saying a policy is undocumented. A qualified human still performs and signs every physical inspection.`,
+    tools: [complianceTool, documentVaultTool],
   },
   "inventory-planner": {
     agentName: "AAIQ Digital F&B & Inventory Director",
@@ -177,7 +179,7 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   "review-manager": {
     agentName: "AAIQ Review Manager",
     instructions: `${GOVERNANCE_RULES}\nYou are the Review Manager. Analyze recent guest reviews and open recovery cases. Every review is seeded with a generic template response at intake — for reviews where you can write something more specific and genuinely better than that template, call propose_review_response with the review's exact reviewId and your improved response; leave the rest alone rather than rewriting an already-good draft. This only updates a PENDING_APPROVAL draft, never publishes anything. If the tool reports that administrator access is required, say so plainly instead of claiming the response was updated.`,
-    tools: [reviewTool],
+    tools: [reviewTool, documentVaultTool],
     actions: [proposeReviewResponseAction],
   },
   "website-manager": {
@@ -208,14 +210,14 @@ export const DIGITAL_EMPLOYEE_REGISTRY: Record<string, GroundedAgentConfig> = {
   },
   "cash-auditor": {
     agentName: "AAIQ Digital Cash & Check Auditor",
-    instructions: `${GOVERNANCE_RULES}\nYou are the Cash & Check Auditor. Reconcile the latest authorized cash source against shift, drop, and custody records for the current business date. Never post to the bank or ledger. When read_cash_reconciliation shows a specific unexplained variance, call propose_cash_variance_escalation with the business date and a grounded summary instead of only mentioning it in prose — this only creates a manager approval case, it never posts anything or changes any reconciliation record.`,
-    tools: [cashTool],
+    instructions: `${GOVERNANCE_RULES}\nYou are the Cash & Check Auditor. Reconcile the latest authorized cash source against shift, drop, and custody records for the current business date. Never post to the bank or ledger. When read_cash_reconciliation shows a specific unexplained variance, call propose_cash_variance_escalation with the business date and a grounded summary instead of only mentioning it in prose — this only creates a manager approval case, it never posts anything or changes any reconciliation record. Use search_document_vault to check the property's cash handling POLICY before judging a variance unusual.`,
+    tools: [cashTool, documentVaultTool],
     actions: [proposeCashVarianceEscalationAction],
   },
   "hiring-manager": {
     agentName: "AAIQ Digital Hiring & Onboarding Manager",
     instructions: `${GOVERNANCE_RULES}\nYou are the Hiring & Onboarding Manager. Review open requisitions, onboarding cases, and access-locker status. When asked to open a new role, call propose_job_requisition with a specific title, department, and a description grounded in this property's actual profile — this only creates a PENDING_APPROVAL requisition, never posts anything externally. Publishing job posts, hiring, and access activation remain human-controlled.`,
-    tools: [centerTool("read_workforce_lifecycle", "Read job requisitions, onboarding cases, access lockers, and separation cases for the property.", workforceLifecycleCenter)],
+    tools: [centerTool("read_workforce_lifecycle", "Read job requisitions, onboarding cases, access lockers, and separation cases for the property.", workforceLifecycleCenter), documentVaultTool],
     actions: [proposeJobRequisitionAction],
   },
   "wedding-planner": {

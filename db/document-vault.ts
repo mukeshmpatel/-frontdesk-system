@@ -86,6 +86,36 @@ export async function documentVaultCenter(userEmail: string, query = "") {
   };
 }
 
+/**
+ * Read-only, agent-safe view of the Document Vault: verified metadata only
+ * (title, document type, department, and the human-typed classification
+ * note — never invented content). The vault does not extract document text
+ * today (OCR is CONFIGURATION_REQUIRED, see documentVaultCenter's providers
+ * field) so there is no body text to ground an agent in; this exists so an
+ * agent can cite a real document by title and status instead of speaking
+ * only from general instructions, while being explicit that the human still
+ * needs to open the document itself to read it.
+ */
+export async function documentVaultReferences(userEmail: string) {
+  const result = await documentVaultCenter(userEmail, "");
+  if (!result) return { error: "Document Vault access is not available for this property." };
+  return {
+    ocrStatus: result.providers.ocr.status,
+    guidance: "Full document text is not extracted (OCR is not configured) — the fields below are verified metadata only. Cite a document by its title and status; never invent or quote body text that isn't shown here, and direct the human to open the document in the Document Vault to read it.",
+    documents: result.records
+      .filter((r: any) => r.status === "ACTIVE")
+      .slice(0, 50)
+      .map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        documentType: r.document_type,
+        department: r.department || null,
+        classificationNote: r.classification_evidence || null,
+        updatedAt: r.updated_at,
+      })),
+  };
+}
+
 export async function ingestDocument(userEmail: string, file: File, input: Record<string, string>) {
   const scoped = await scope(userEmail);
   if (!scoped) return null;

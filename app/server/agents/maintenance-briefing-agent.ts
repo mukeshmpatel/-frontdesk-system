@@ -2,6 +2,7 @@ import { Agent, OpenAIProvider, Runner, tool } from "@openai/agents";
 import { z } from "zod";
 import { agentDatabase, beginAgentRun, createAgentFallback, finishAgentRun, proposeApprovalCase, recordToolCall } from "../../../db/agent-platform";
 import { getIntegrationCredential } from "../../../db/open-source-integrations";
+import { documentVaultReferences } from "../../../db/document-vault";
 import { buildOutcomeRecord, correctionsInstructionAddendum, type GroundedOperationsOutput } from "./agent-runtime";
 
 const actionTakenSchema = z.object({
@@ -107,6 +108,16 @@ export async function runMaintenanceBriefing(userEmail: string, intent: string) 
       return rows.results;
     },
   });
+  const documentVaultTool = tool({
+    name: "search_document_vault",
+    description: "Read the property's Document Vault: verified document titles, types, departments, and any human-reviewed classification note — useful for WARRANTY and MAINTENANCE_RECORD documents. Full document text is not extracted (OCR is not configured), so this returns metadata only, never invented body content. Cite a document by its title and status, and tell the human to open it in the Document Vault to read the actual document.",
+    parameters: z.object({}),
+    execute: async () => {
+      const output = await documentVaultReferences(userEmail);
+      await recordToolCall(run, "search_document_vault", {}, output);
+      return output;
+    },
+  });
   const proposeDispatchTool = tool({
     name: "propose_maintenance_dispatch",
     description: "Propose dispatching a specific open work order (or a newly needed repair grounded in read_maintenance_work/read_compliance_due/read_asset_context) to a technician. This only creates a PENDING approval case for a manager to review; it never assigns a technician, changes a work order's status, or reserves parts.",
@@ -138,8 +149,10 @@ change anything. When a specific work order or repair clearly needs to be dispat
 now and is not already assigned, call propose_maintenance_dispatch with a grounded reason and priority
 — this only creates a manager approval case, it never assigns a technician, reserves parts, or returns
 equipment to service on its own, and every such call must be listed in actionsTaken. Never approve
-work, order parts, or bypass safety rules yourself.` + correctionsAddendum,
-      tools: [workTool, complianceTool, assetTool, proposeDispatchTool],
+work, order parts, or bypass safety rules yourself. Use search_document_vault to check for a
+relevant WARRANTY or MAINTENANCE_RECORD document before recommending a repair be sent out to a
+third party.` + correctionsAddendum,
+      tools: [workTool, complianceTool, assetTool, documentVaultTool, proposeDispatchTool],
       outputType: briefingSchema,
     });
     const runner = new Runner({
