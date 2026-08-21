@@ -143,7 +143,7 @@ export function Editor({ project }: { project: Project }) {
         />
         <button
           type="submit"
-          disabled={adding}
+          disabled={adding || !prompt.trim()}
           className="self-start rounded-md bg-accent px-4 py-2 font-medium hover:opacity-90 disabled:opacity-50"
         >
           {adding ? "Generating clip..." : "Generate clip"}
