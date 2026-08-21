@@ -28,14 +28,22 @@ export async function generateClip(prompt: string, seed: string = randomUUID()):
   const absPath = path.join(dir, fileName);
 
   const color = colorFromPrompt(prompt);
-  const duration = 3;
+  const duration = 4;
   const safeText = escapeForDrawtext(prompt).slice(0, 200);
 
+  // The mock renderer has no real motion to show, so a plain static card
+  // reads as "broken" even though it isn't. Animate the hue and drift the
+  // caption over time so it visibly plays instead of looking like a frozen
+  // frame.
   await new Promise<void>((resolve, reject) => {
     ffmpeg()
-      .input(`color=c=${color}:s=1280x720:d=${duration}`)
+      .input(`color=c=${color}:s=1280x720:d=${duration}:r=30`)
       .inputFormat("lavfi")
       .videoFilters([
+        {
+          filter: "hue",
+          options: { h: `30*sin(2*PI*t/${duration})` }
+        },
         {
           filter: "drawtext",
           options: {
@@ -43,7 +51,7 @@ export async function generateClip(prompt: string, seed: string = randomUUID()):
             fontcolor: "white",
             fontsize: 42,
             x: "(w-text_w)/2",
-            y: "(h-text_h)/2",
+            y: `(h-text_h)/2+14*sin(2*PI*t/${duration})`,
             box: 1,
             boxcolor: "black@0.4",
             boxborderw: 20
